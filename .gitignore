@@ -1,5 +1,19 @@
-company/service_api/venv
-company/service_api/__pycache__
+seguradora/service_api/venv
+seguradora/service_api/__pycache__
+
+regente_seguradoras/venv
+regente_seguradoras/__pycache__
+regente_seguradoras/keys
+
+automovel_online/service_api/venv
+automovel_online/service_api/__pycache__
+
+governo/venv
+governo/__pycache__
+governo/keys
+
+IMT/service_api/venv
+IMT/service_api/__pycache__
 
 # Ambiente virtual
 venv/
