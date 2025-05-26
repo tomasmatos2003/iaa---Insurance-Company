@@ -1,0 +1,42 @@
+company/service_api/venv
+company/service_api/__pycache__
+
+# Ambiente virtual
+venv/
+.env
+.env.*
+
+# __pycache__ e ficheiros compilados
+__pycache__/
+*.py[cod]
+*.so
+
+# ficheiros de logs
+*.log
+
+# ficheiros do sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Migrations (opcional, se usares)
+migrations/
+
+# Test reports
+htmlcov/
+coverage.xml
+.tox/
+.pytest_cache/
+
+# Arquivos temporários
+*.bak
+*.swp
+*.tmp
+
+# Database (se local)
+*.sqlite3
