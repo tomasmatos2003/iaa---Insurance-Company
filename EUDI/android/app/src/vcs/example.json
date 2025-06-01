@@ -1,0 +1,51 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://w3id.org/eidas/v1"
+  ],
+  "id": "did:uuid:5f8a5b27-0c92-4df8-89c6-53a1e5d1b0ab",
+  "type": [
+    "VerifiableCredential",
+    "VehicleInsuranceCredential"
+  ],
+  "issuer": {
+    "id": "did:insurance:seguradoraXYZ",
+    "name": "Seguradora XYZ",
+    "type": ["InsuranceCompany"]
+  },
+  "issuanceDate": "2025-03-26T12:00:00Z",
+  "expirationDate": "2026-03-26T12:00:00Z",
+  "credentialSubject": {
+    "id": "did:vehicle:WVWZZZ1JZ3W386752",
+    "type": "VehicleInsurance",
+    "policyNumber": "ABC-123456789",
+    "holder": {
+      "id": "did:person:123456789",
+      "givenName": "João",
+      "familyName": "Silva",
+      "dateOfBirth": "1990-05-10",
+      "nationality": "PT"
+    },
+    "vehicle": {
+      "make": "Volkswagen",
+      "model": "Golf",
+      "year": "2022",
+      "vin": "did:vin:WVWZZZ1JZ3W386752",
+      "licensePlate": "did:plate:AA-12-BB"
+    },
+    "coverage": {
+      "type": "ThirdPartyLiability",
+      "coverageAmount": "5000000",
+      "startDate": "2025-03-26",
+      "endDate": "2026-03-26"
+    },
+    "issuingAuthority": "Seguradora XYZ"
+  },
+  "proof": {
+    "type": "EcdsaSecp256k1Signature2019",
+    "created": "2025-03-26T12:00:00Z",
+    "proofPurpose": "assertionMethod",
+    "verificationMethod": "did:insurance:seguradoraXYZ#keys-1",
+    "signatureValue": "MEUCIQDh4L4a57aDas671D61Dw"
+  }
+}
