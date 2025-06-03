@@ -9,6 +9,11 @@ from fastapi import Depends, HTTPException, status
 from models.schemas import User, Login, Token, TokenData, Pre_InsuranceData    
 from datetime import datetime
 import requests
+import qrcode
+import io
+import base64
+from fastapi.responses import JSONResponse
+import json
 
 app = FastAPI()
 
@@ -92,3 +97,35 @@ def insert_insurance_data(
         "submitted_by": current_user.username,
         "signature": signature
     }
+
+@app.get("/generate_qrcode")
+def generate_qrcode(current_user: TokenData = Depends(get_current_user)):
+    try:
+        data = {
+            "url": "http://127.0.0.1:8000/send_vc",
+            "requiredVCs": ["vehicle_vc", "driving_license_vc"]
+        }
+
+        json_str = json.dumps(data)
+
+        qr = qrcode.QRCode(version=1, box_size=10, border=4)
+        qr.add_data(json_str)
+        qr.make(fit=True)
+
+        img = qr.make_image(fill_color="black", back_color="white")
+
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        buf.seek(0)
+
+        # Encode image as base64
+        img_base64 = base64.b64encode(buf.read()).decode("utf-8")
+        data_uri = f"data:image/png;base64,{img_base64}"
+
+        return JSONResponse({
+            "qrCodeDataUri": data_uri,
+            "data": data
+        })
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -6,9 +6,9 @@ import TokenApi from "./context/TokenApi";
 import './index.css';
 
 const Home = () => {
-  const [vehicleJson, setVehicleJson] = useState("");
-  const [licenseJson, setLicenseJson] = useState("");
-  const [response, setResponse] = useState(null);
+  const [qrCodeDataUri, setQrCodeDataUri] = useState(null);
+  const [requiredVCs, setRequiredVCs] = useState([]);
+  const [error, setError] = useState(null);
 
   const Auth = useContext(AuthApi);
   const Token = useContext(TokenApi);
@@ -16,7 +16,6 @@ const Home = () => {
   const token = Token.token;
   const headers = useMemo(() => ({
     Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
   }), [token]);
 
   const handleLogout = () => {
@@ -24,30 +23,18 @@ const Home = () => {
     Cookies.remove("token");
   };
 
-  const handleFileUpload = async (event, setter) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  const fetchQRCode = async () => {
+    setError(null);
+    setQrCodeDataUri(null);
+    setRequiredVCs([]);
     try {
-      const text = await file.text();
-      JSON.parse(text); // Validate JSON
-      setter(text);
-    } catch (error) {
-      alert("Invalid JSON file");
-    }
-  };
+      const res = await axios.get("http://127.0.0.1:8000/generate_qrcode", { headers });
 
-  const handleSubmit = async () => {
-    try {
-      const payload = {
-        vehicle_vc: JSON.parse(vehicleJson),
-        driving_license_vc: JSON.parse(licenseJson),
-      };
-
-      const res = await axios.post("http://127.0.0.1:8000/insert_data", payload, { headers });
-      setResponse(res.data);
+      setQrCodeDataUri(res.data.qrCodeDataUri);
+      // Safely access requiredVCs inside data, fallback to empty array if undefined
+      setRequiredVCs(res.data?.data?.requiredVCs ?? []);
     } catch (err) {
-      console.error("Failed to submit data", err);
-      setResponse({ error: err.response?.data?.detail || err.message });
+      setError(err.response?.data?.detail || err.message);
     }
   };
 
@@ -61,60 +48,29 @@ const Home = () => {
       </div>
 
       <div className="bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-lg mb-10 border border-[#d7ccc8]">
-        <h3 className="text-xl font-semibold mb-6 text-[#5d4037]">Upload Vehicle and Driving License JSON</h3>
-
-        {/* VEHICLE FILE UPLOAD */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-[#5d4037] mb-2">Upload Vehicle JSON</label>
-          <input
-            type="file"
-            accept=".json"
-            onChange={(e) => handleFileUpload(e, setVehicleJson)}
-            className="mb-2"
-          />
-          <textarea
-            rows="8"
-            value={vehicleJson}
-            onChange={(e) => setVehicleJson(e.target.value)}
-            className="w-full p-3 border border-[#bcaaa4] rounded-md font-mono text-sm"
-            placeholder='Vehicle JSON will appear here after upload'
-          />
-        </div>
-
-        {/* LICENSE FILE UPLOAD */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-[#5d4037] mb-2">Upload Driving License JSON</label>
-          <input
-            type="file"
-            accept=".json"
-            onChange={(e) => handleFileUpload(e, setLicenseJson)}
-            className="mb-2"
-          />
-          <textarea
-            rows="8"
-            value={licenseJson}
-            onChange={(e) => setLicenseJson(e.target.value)}
-            className="w-full p-3 border border-[#bcaaa4] rounded-md font-mono text-sm"
-            placeholder='Driving License JSON will appear here after upload'
-          />
-        </div>
+        <h3 className="text-xl font-semibold mb-6 text-[#5d4037]">Generate QR Code for Required VCs</h3>
 
         <button
-          onClick={handleSubmit}
-          className="bg-[#6d4c41] text-white px-6 py-3 rounded hover:bg-[#5d4037] transition"
+          onClick={fetchQRCode}
+          className="bg-[#6d4c41] text-white px-6 py-3 rounded hover:bg-[#5d4037] transition mb-6"
         >
-          Submit to Insurance
+          Generate QR Code
         </button>
-      </div>
 
-      {response && (
-        <div className="bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-lg mb-10 border border-[#d7ccc8]">
-          <h4 className="text-xl font-semibold mb-4 text-[#5d4037]">Response</h4>
-          <pre className="bg-[#fafafa] border border-[#d7ccc8] p-4 rounded overflow-auto text-sm text-[#4e342e] whitespace-pre-wrap">
-            {JSON.stringify(response, null, 2)}
-          </pre>
-        </div>
-      )}
+        {error && <p className="text-red-600 mb-4">{error}</p>}
+
+        {qrCodeDataUri && (
+          <div className="mb-6">
+            <img src={qrCodeDataUri} alt="VCs QR Code" className="mx-auto mb-4" />
+            <p className="text-[#5d4037] font-semibold">Required Verifiable Credentials:</p>
+            <ul className="list-disc list-inside text-[#4e342e]">
+              {requiredVCs.map((vc) => (
+                <li key={vc}>{vc}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

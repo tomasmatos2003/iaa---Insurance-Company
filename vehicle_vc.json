@@ -15,6 +15,9 @@
       "issuingAuthorities": "Instituto da Mobilidade e dos Transportes",
       "plateNumber": "asd",
       "firstRegistrationDate": "2022-01-15",
+
+
+      
       "owner": {
         "name": "ads",
         "address": {
@@ -39,6 +42,11 @@
         "vehicleType": "Truck",
         "transmissionType": "Automatic"
       },
+
+
+
+
+
       "color": "Brown",
       "tyres": {
         "frontTyres": "255/35 R19",

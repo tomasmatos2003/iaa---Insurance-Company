@@ -11,6 +11,9 @@
     "credentialSubject": {
       "id": "did:card:a",
       "familyName": "Matos",
+
+
+
       "givenName": "Tomás",
       "birthDate": "2025-06-13",
       "birthPlace": "Averi",
@@ -18,6 +21,10 @@
       "streetAddress": "20 Rua da Alagoa, Paranhos da Beira",
       "postalCode": "6270-133",
       "city": "Seia",
+
+
+
+
       "country": "Portugal",
       "issuingAuthority": "Instituto da Mobilidade e dos Transportes",
       "categoryCode": "A",
@@ -26,6 +33,10 @@
       "categoryRestrictions": "01, 02"
     },
     "issuer": "did:key:zXwpV6kY2FqjziZDTbV2anRUMrnKdVNGwPgyYqiLc6N8p16JWStmHEK35yEAn3jvTTYHiw8hzkJxLDKiDApsbRehANyk",
+
+
+
+    
     "issuanceDate": "2025-06-02T17:52:02.534218Z",
     "expirationDate": "2026-06-02T17:52:02.534218Z",
     "proof": {
