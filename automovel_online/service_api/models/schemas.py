@@ -23,13 +23,52 @@ class TokenData(BaseModel):
 
 
 
+class Address(BaseModel):
+    streetAddress: str
+    postalCode: str
+    city: str
+    country: str
+
+
+class Owner(BaseModel):
+    name: str
+    address: Address
+
+
+class Seating(BaseModel):
+    seats: str
+    standingPlaces: str
+
+
+class VehicleCategory(BaseModel):
+    nationalCategory: str
+    vehicleType: str
+    transmissionType: str
+
+
+class Tyres(BaseModel):
+    frontTyres: str
+    rearTyres: str
+
+
 class VehicleData(BaseModel):
-    make: str = Field(..., example="Toyota")
-    model: str = Field(..., example="Corolla")
-    year: int = Field(..., ge=1900, le=2100, example=2023)
-    vin: str = Field(..., example="1HGCM82633A004352")
-    color: Optional[str] = Field(None, example="Blue")
-    registrationNumber: Optional[str] = Field(None, example="ABC1234")
+    countryDistinguishingSign: str = Field(..., example="PT")
+    issuingAuthorities: str = Field(..., example="Instituto da Mobilidade e dos Transportes")
+    plateNumber: str
+    firstRegistrationDate: str = Field(..., example="2022-01-15")
+    owner: Owner
+    brand: str
+    model: str
+    commercialName: str
+    vin: str
+    unladenWeight: str
+    fuelType: str
+    seating: Seating
+    vehicleCategory: VehicleCategory
+    color: str
+    tyres: Tyres
+    specialNotes: str
+
 
 class VehicleWrapper(BaseModel):
     vehicle: VehicleData

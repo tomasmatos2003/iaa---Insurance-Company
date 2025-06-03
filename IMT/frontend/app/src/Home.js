@@ -6,24 +6,34 @@ import TokenApi from "./context/TokenApi";
 import './index.css';
 
 const Home = () => {
-  const [drivingLicense, setDrivingLicense] = useState({
-    license_number: "",
-    issue_date: "",
-    expiry_date: "",
-    name: "",
-    dob: "",
-    address: "",
-    category: "",
+  const [formData, setFormData] = useState({
+    familyName: "",
+    givenName: "",
+    birthDate: "",
+    birthPlace: "",
+    nationality: "",
+    streetAddress: "",
+    postalCode: "",
+    city: "",
+    country: "",
+    issuingAuthority: "Instituto da Mobilidade e dos Transportes",
+    categoryCode: "",
+    categoryFirstIssueDate: "",
+    categoryValidUntil: "",
+    categoryRestrictions: ""
   });
+
+
   const [response, setResponse] = useState(null);
 
   const Auth = useContext(AuthApi);
   const Token = useContext(TokenApi);
 
   const token = Token.token;
+
+  // headers só com Authorization para usar com FormData (Axios configura Content-Type)
   const headers = useMemo(() => ({
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
   }), [token]);
 
   const handleLogout = () => {
@@ -32,14 +42,16 @@ const Home = () => {
   };
 
   const handleChange = (e) => {
-    setDrivingLicense((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const payload = { driving_license: drivingLicense };
+      const payload = { driving_license: formData };
 
       const res = await axios.post("http://127.0.0.1:8004/insert_data", payload, { headers });
       setResponse(res.data);
@@ -52,8 +64,13 @@ const Home = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-100 to-red-300 text-[#3b2f2f] px-6 py-10 max-w-4xl mx-auto font-sans">
       <div className="flex justify-between items-center mb-10">
-        <h2 className="text-4xl font-bold tracking-tight text-red-900">Driving License Dashboard</h2>
-        <button onClick={handleLogout} className="bg-red-900 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition shadow-md">
+        <h2 className="text-4xl font-bold tracking-tight text-red-900">
+          Driving License Dashboard
+        </h2>
+        <button
+          onClick={handleLogout}
+          className="bg-red-900 text-white px-5 py-2 rounded-lg hover:bg-red-700 transition shadow-md"
+        >
           Logout
         </button>
       </div>
@@ -62,74 +79,162 @@ const Home = () => {
         onSubmit={handleSubmit}
         className="bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-lg mb-10 border border-red-300 max-w-md mx-auto"
       >
-        <h3 className="text-xl font-semibold mb-6 text-red-700 text-center">Enter Driving License Data</h3>
+        <h3 className="text-xl font-semibold mb-6 text-red-700 text-center">
+          Enter Driving License & Personal Data
+        </h3>
 
-        <label className="block mb-2 font-medium text-red-800">License Number:</label>
+        {/* Campo upload de foto */}
+        {/* <label className="block mb-2 font-medium text-red-800">Upload Photo:</label>
         <input
-          name="license_number"
-          value={drivingLicense.license_number}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="w-full mb-4"
+        /> */}
+
+        {/* ... o resto dos inputs permanece igual */}
+
+        {/* Nome e Apelido */}
+        <label className="block mb-2 font-medium text-red-800">Family Name:</label>
+        <input
+          name="familyName"
+          value={formData.familyName}
           onChange={handleChange}
           required
           className="w-full mb-4 p-2 border border-red-300 rounded"
-          placeholder="DL1234567890"
+          placeholder="Silva"
         />
 
-        <label className="block mb-2 font-medium text-red-800">Issue Date:</label>
+        <label className="block mb-2 font-medium text-red-800">Given Name:</label>
         <input
-          name="issue_date"
-          type="date"
-          value={drivingLicense.issue_date}
+          name="givenName"
+          value={formData.givenName}
           onChange={handleChange}
           required
           className="w-full mb-4 p-2 border border-red-300 rounded"
+          placeholder="João"
         />
 
-        <label className="block mb-2 font-medium text-red-800">Expiry Date:</label>
-        <input
-          name="expiry_date"
-          type="date"
-          value={drivingLicense.expiry_date}
-          onChange={handleChange}
-          required
-          className="w-full mb-4 p-2 border border-red-300 rounded"
-        />
-
-        <label className="block mb-2 font-medium text-red-800">Full Name:</label>
-        <input
-          name="name"
-          value={drivingLicense.name}
-          onChange={handleChange}
-          required
-          className="w-full mb-4 p-2 border border-red-300 rounded"
-          placeholder="John Doe"
-        />
-
+        {/* Data de Nascimento e Local de Nascimento */}
         <label className="block mb-2 font-medium text-red-800">Date of Birth:</label>
         <input
-          name="dob"
+          name="birthDate"
           type="date"
-          value={drivingLicense.dob}
+          value={formData.birthDate}
           onChange={handleChange}
           required
           className="w-full mb-4 p-2 border border-red-300 rounded"
         />
 
-        <label className="block mb-2 font-medium text-red-800">Address:</label>
+        <label className="block mb-2 font-medium text-red-800">Birth Place:</label>
         <input
-          name="address"
-          value={drivingLicense.address}
+          name="birthPlace"
+          value={formData.birthPlace}
           onChange={handleChange}
+          required
           className="w-full mb-4 p-2 border border-red-300 rounded"
-          placeholder="123 Main St, Springfield"
+          placeholder="Aveiro, Portugal"
         />
 
-        <label className="block mb-2 font-medium text-red-800">Category:</label>
+        {/* Nacionalidade */}
+        <label className="block mb-2 font-medium text-red-800">Nationality:</label>
         <input
-          name="category"
-          value={drivingLicense.category}
+          name="nationality"
+          value={formData.nationality}
+          onChange={handleChange}
+          required
+          className="w-full mb-4 p-2 border border-red-300 rounded"
+          placeholder="PRT"
+        />
+
+        {/* Morada */}
+        <label className="block mb-2 font-medium text-red-800">Street Address:</label>
+        <input
+          name="streetAddress"
+          value={formData.streetAddress}
+          onChange={handleChange}
+          className="w-full mb-4 p-2 border border-red-300 rounded"
+          placeholder="Rua das Flores, 123"
+        />
+
+        <label className="block mb-2 font-medium text-red-800">Postal Code:</label>
+        <input
+          name="postalCode"
+          value={formData.postalCode}
+          onChange={handleChange}
+          className="w-full mb-4 p-2 border border-red-300 rounded"
+          placeholder="3800-000"
+        />
+
+        <label className="block mb-2 font-medium text-red-800">City:</label>
+        <input
+          name="city"
+          value={formData.city}
+          onChange={handleChange}
+          className="w-full mb-4 p-2 border border-red-300 rounded"
+          placeholder="Aveiro"
+        />
+
+        <label className="block mb-2 font-medium text-red-800">Country:</label>
+        <input
+          name="country"
+          value={formData.country}
+          onChange={handleChange}
+          className="w-full mb-4 p-2 border border-red-300 rounded"
+          placeholder="Portugal"
+        />
+
+        {/* Dados da Carta */}
+        {/* <label className="block mb-2 font-medium text-red-800">License Number:</label>
+        <input
+          name="licenseNumber"
+          value={formData.licenseNumber}
+          onChange={handleChange}
+          required
+          className="w-full mb-4 p-2 border border-red-300 rounded"
+          placeholder="AV-12345678"
+        /> */}
+
+        {/* Categoria */}
+        <h4 className="text-lg font-semibold mb-2 text-red-700">Category</h4>
+
+        <label className="block mb-2 font-medium text-red-800">Category Code:</label>
+        <input
+          name="categoryCode"
+          value={formData.categoryCode}
+          onChange={handleChange}
+          required
+          className="w-full mb-4 p-2 border border-red-300 rounded"
+          placeholder="B"
+        />
+
+        <label className="block mb-2 font-medium text-red-800">First Issue Date (Category):</label>
+        <input
+          name="categoryFirstIssueDate"
+          type="date"
+          value={formData.categoryFirstIssueDate}
+          onChange={handleChange}
+          required
+          className="w-full mb-4 p-2 border border-red-300 rounded"
+        />
+
+        <label className="block mb-2 font-medium text-red-800">Valid Until (Category):</label>
+        <input
+          name="categoryValidUntil"
+          type="date"
+          value={formData.categoryValidUntil}
+          onChange={handleChange}
+          required
+          className="w-full mb-4 p-2 border border-red-300 rounded"
+        />
+
+        <label className="block mb-2 font-medium text-red-800">Restrictions (comma-separated):</label>
+        <input
+          name="categoryRestrictions"
+          value={formData.categoryRestrictions}
           onChange={handleChange}
           className="w-full mb-6 p-2 border border-red-300 rounded"
-          placeholder="B"
+          placeholder="01, 02"
         />
 
         <button
@@ -141,13 +246,24 @@ const Home = () => {
       </form>
 
       {response && (
-        <div className="bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-lg border border-red-300 max-w-md mx-auto">
-          <h4 className="text-xl font-semibold mb-4 text-red-700">Response</h4>
-          <pre className="bg-red-50 border border-red-200 p-4 rounded overflow-auto text-sm text-red-900 whitespace-pre-wrap">
-            {JSON.stringify(response, null, 2)}
-          </pre>
-        </div>
-      )}
+      <div className="bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-lg border border-red-300 max-w-md mx-auto">
+        <h4 className="text-xl font-semibold mb-4 text-red-700">Response</h4>
+        {/* <pre className="bg-red-50 border border-red-200 p-4 rounded overflow-auto text-sm text-red-900 whitespace-pre-wrap">
+          {JSON.stringify(response, null, 2)}
+        </pre> */}
+        {response.qr_code && (
+          <div className="mt-4 text-center">
+            <h5 className="font-medium mb-2">Credential QR Code</h5>
+            <img
+              src={response.qr_code}
+              alt="Verifiable Credential QR Code"
+              className="mx-auto"
+              style={{ maxWidth: '250px' }}
+            />
+          </div>
+        )}
+      </div>
+    )}
     </div>
   );
 };

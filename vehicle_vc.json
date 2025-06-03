@@ -1,6 +1,61 @@
 {
-  "make": "Toyota",
-  "model": "Corolla",
-  "year": 2020,
-  "vin": "1HGCM82633A004352"
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://www.w3.org/2018/credentials/examples/v1"
+  ],
+  "id": "urn:uuid:5a0642e4-43ea-4529-aa5a-323aafe36012",
+  "type": [
+    "VerifiableCredential",
+    "AutomobileCredential"
+  ],
+  "credentialSubject": {
+    "id": "did:automobile:a",
+    "vehicle": {
+      "countryDistinguishingSign": "PT",
+      "issuingAuthorities": "Instituto da Mobilidade e dos Transportes",
+      "plateNumber": "asd",
+      "firstRegistrationDate": "2022-01-15",
+      "owner": {
+        "name": "ads",
+        "address": {
+          "streetAddress": "asd",
+          "postalCode": "asd",
+          "city": "Lisbon",
+          "country": "Spain"
+        }
+      },
+      "brand": "Ford",
+      "model": "asd",
+      "commercialName": "asd",
+      "vin": "asd",
+      "unladenWeight": "asd",
+      "fuelType": "Petrol",
+      "seating": {
+        "seats": "1",
+        "standingPlaces": "2"
+      },
+      "vehicleCategory": {
+        "nationalCategory": "N1",
+        "vehicleType": "Truck",
+        "transmissionType": "Automatic"
+      },
+      "color": "Brown",
+      "tyres": {
+        "frontTyres": "255/35 R19",
+        "rearTyres": "275/40 R20"
+      },
+      "specialNotes": "asd"
+    }
+  },
+  "issuer": "did:key:zXwpV6kY2FqjziZDTbV2anRUMrnKdVNGwPgyYqiLc6N8p16JWStmHEK35yEAn3jvTTYHiw8hzkJxLDKiDApsbRehANyk",
+  "issuanceDate": "2025-06-03T15:32:39.845258Z",
+  "expirationDate": "2026-06-03T15:32:39.845258Z",
+  "proof": {
+    "type": "DataIntegrityProof",
+    "created": "2025-06-03T15:32:39Z",
+    "verificationMethod": "did:key:zXwpV6kY2FqjziZDTbV2anRUMrnKdVNGwPgyYqiLc6N8p16JWStmHEK35yEAn3jvTTYHiw8hzkJxLDKiDApsbRehANyk#did:key:zXwpV6kY2FqjziZDTbV2anRUMrnKdVNGwPgyYqiLc6N8p16JWStmHEK35yEAn3jvTTYHiw8hzkJxLDKiDApsbRehANyk",
+    "cryptosuite": "ecdsa-rdfc-2019",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "MEYCIQCzcy18k0ay927QHKgcqp1Rb_DzOX6W-2uyAjIvXepzbwIhAISgOAsqHbEEoXPB20NH1q1rjFEtcRWEntfdCTH2VtUG"
+  }
 }

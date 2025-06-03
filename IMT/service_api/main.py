@@ -7,9 +7,14 @@ from common.oauth import get_current_user
 from common.jwttoken import create_access_token
 from fastapi import Depends, HTTPException, status
 from models.schemas import User, Login, Token, TokenData, DLWrapper 
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 from fastapi.encoders import jsonable_encoder
+from uuid import uuid4
+import qrcode
+import io
+import base64
+import json
 
 app = FastAPI()
 
@@ -47,43 +52,76 @@ def login(request:OAuth2PasswordRequestForm = Depends()):
     access_token = create_access_token(data={"sub": user["username"]})
     return {"access_token": access_token, "token_type": "bearer"}
 
-
-
 @app.post("/insert_data")
 def insert_data(
     request: DLWrapper,
     current_user: TokenData = Depends(get_current_user)
 ):  
-    # Convert driving_license to dict
+    # Convert driving_license to dict and ensure it's serializable
     dl_dict = request.driving_license.dict()
-
-    # Use jsonable_encoder to convert dates to ISO strings
     dl_dict_serializable = jsonable_encoder(dl_dict)
 
-    data = {
-        "user": current_user.username,
-        "driving_license": dl_dict_serializable,
+    vc_id = f"urn:uuid:{uuid4()}"
+   
+    subject_id = f"did:card:{current_user.username}"
+
+    vc_data = {
+        "@context": [
+            "https://www.w3.org/2018/credentials/v1",
+            "https://www.w3.org/2018/credentials/examples/v1"
+        ],
+        "id": vc_id,
+        "type": [
+            "VerifiableCredential",
+            "DrivingLicenseCredential"
+        ],
+        "credentialSubject": {
+            "id": subject_id,
+            **dl_dict_serializable
+        }
     }
 
-    # Call external signing API
+    data_to_sign = {
+        "user": current_user.username,
+        "credential": vc_data
+    }
+
     try:
         signing_response = requests.post(
-            "http://127.0.0.1:8002/sign-json",
-            json={"data": data},
+            "http://127.0.0.1:8002/issue_vc",
+            json=data_to_sign,
             timeout=5
         )
         signing_response.raise_for_status()
-        signature = signing_response.json().get("signature")
+        signed_vc = signing_response.json()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Signing service error: {str(e)}")
 
-    entry = data.copy()
-    entry["signature"] = signature
 
-    db["driving_licenses"].insert_one(entry)
+    result = db["driving_licenses"].insert_one(signed_vc)
+
+    # Convert ObjectId to string before JSON serialization
+    signed_vc["_id"] = str(result.inserted_id)
+
+    # Now serialize to JSON
+    signed_vc_json = json.dumps(signed_vc)
+
+    # Generate QR code from the signed VC JSON
+    qr = qrcode.QRCode(version=1, box_size=10, border=4)
+    qr.add_data(signed_vc_json)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill='black', back_color='white')
+
+    # Convert PIL image to base64 string
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
 
     return {
-        "message": "driving_license submitted successfully.",
+        "message": "Verifiable Credential submitted successfully.",
         "submitted_by": current_user.username,
-        "signature": signature
+        "vc": signed_vc,
+        "qr_code": f"data:image/png;base64,{img_str}"
     }
+

@@ -20,16 +20,23 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     username: Optional[str] = None
     # role: Optional[str] = None
-
+    
 
 class DrivingLicenseData(BaseModel):
-    license_number: str = Field(..., example="DL1234567890")
-    issue_date: date = Field(..., example="2020-01-01")
-    expiry_date: date = Field(..., example="2030-01-01")
-    name: str = Field(..., example="John Doe")
-    dob: date = Field(..., example="1990-05-15")
-    address: Optional[str] = Field(None, example="123 Main St, Springfield")
-    category: Optional[str] = Field(None, example="B")
+    familyName: str
+    givenName: str
+    birthDate: date = Field(..., example="1990-05-15")
+    birthPlace: str
+    nationality: str
+    streetAddress: Optional[str] = Field(None, example="123 Main St, Springfield")
+    postalCode: Optional[str] = Field(None, example="6270-133")
+    city: str
+    country: str
+    issuingAuthority: str
+    categoryCode: Optional[str] = Field(None, example="B")
+    categoryFirstIssueDate: date = Field(..., example="2030-01-01")
+    categoryValidUntil: date = Field(..., example="2030-01-01")
+    categoryRestrictions: Optional[str] = Field(None, example="01, 02")
 
 class DLWrapper(BaseModel):
     driving_license: DrivingLicenseData

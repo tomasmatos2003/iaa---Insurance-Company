@@ -3,51 +3,84 @@ from pydantic import BaseModel
 from typing import Any
 import json
 import os
-from dotenv import load_dotenv
+from datetime import datetime, timedelta
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.backends import default_backend
+import base64
+from dotenv import load_dotenv
 
 load_dotenv()
 
 app = FastAPI()
 
+KEYS_DIR = "keys"
+PRIVATE_KEY_FILE = os.path.join(KEYS_DIR, "private_key.pem")
+
 class JSONRequest(BaseModel):
-    data: Any  # Accept arbitrary JSON
+    user: str
+    credential: Any  # The VC payload
 
 def load_private_key():
-    with open(os.path.join("keys", "private_key.pem"), "rb") as f:
+    passphrase = os.getenv("PASSPHRASE")
+    if not passphrase:
+        raise Exception("PASSPHRASE env var is not set")
+    passphrase_bytes = passphrase.encode()
+
+    with open(PRIVATE_KEY_FILE, "rb") as f:
         private_key = serialization.load_pem_private_key(
             f.read(),
-            password=os.getenv("PASSPHRASE").encode() if os.getenv("PASSPHRASE") else None,
+            password=passphrase_bytes,
             backend=default_backend()
         )
     return private_key
 
-private_key = load_private_key()
 
-@app.post("/sign-json")
-async def sign_json(request: JSONRequest):
+did_key = os.getenv("DID_KEY")  # e.g. did:key:z.... loaded from env
+
+def sign_json_ld(vc_json: dict) -> dict:
+    private_key = load_private_key()
+    
+    # Deterministic JSON serialization
+    json_bytes = json.dumps(vc_json, sort_keys=True, separators=(',', ':')).encode('utf-8')
+
+    # Sign using ECDSA with SHA256
+    signature = private_key.sign(
+        json_bytes,
+        ec.ECDSA(hashes.SHA256())
+    )
+
+    # Encode signature in multibase/base58 or base64url (for demo, base64url)
+    proof_value = base64.urlsafe_b64encode(signature).decode('utf-8').rstrip("=")
+
+    proof = {
+        "type": "DataIntegrityProof",
+        "created": datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
+        "verificationMethod": f"{did_key}#{did_key}" if did_key else "did:example:123#key-1",
+        "cryptosuite": "ecdsa-rdfc-2019",
+        "proofPurpose": "assertionMethod",
+        "proofValue": proof_value
+    }
+
+    signed_vc = vc_json.copy()
+    signed_vc["proof"] = proof
+    return signed_vc
+
+@app.post("/issue_vc")
+async def issue_vc(request: JSONRequest):
     try:
-        # Deterministic JSON serialization
-        json_bytes = json.dumps(request.data, sort_keys=True, separators=(',', ':')).encode('utf-8')
+        vc = request.credential
+        if "issuer" not in vc:
+            vc["issuer"] = did_key or "did:example:123"
 
-        # Hash the JSON bytes
-        digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
-        digest.update(json_bytes)
-        hashed = digest.finalize()
+        now = datetime.utcnow()
+        vc["issuanceDate"] = now.isoformat() + "Z"
+        vc["expirationDate"] = (now + timedelta(days=365)).isoformat() + "Z"
 
-        # Sign the hash
-        signature = private_key.sign(
-            hashed,
-            padding.PSS(
-                mgf=padding.MGF1(hashes.SHA256()),
-                salt_length=padding.PSS.MAX_LENGTH
-            ),
-            hashes.SHA256()
-        )
+        
+        signed_vc = sign_json_ld(vc)
 
-        return {"signature": signature.hex()}
+        return signed_vc
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Signing failed: {str(e)}")
