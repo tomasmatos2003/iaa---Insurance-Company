@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field, EmailStr
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import date
-
 
 class User(BaseModel):
     username: str
@@ -19,21 +18,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Optional[str] = None
-    # role: Optional[str] = None
-
-class Vehicle_VC(BaseModel):
-    make: str
-    model: str
-    year: int
-    vin: str = Field(..., min_length=17, max_length=17)
-
-class DrivingLicense_VC(BaseModel):
-    license_number: str
-    issue_date: date
-    expiry_date: date
-    issuing_state: str
-    license_class: str
 
 class Pre_InsuranceData(BaseModel):
-    vehicle_vc: Vehicle_VC
-    driving_license_vc: DrivingLicense_VC
+    vehicle_vc: Dict[str, Any]
+    driving_license_vc: Dict[str, Any]

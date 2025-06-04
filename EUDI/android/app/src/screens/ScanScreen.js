@@ -1,31 +1,15 @@
-import React, { useState } from 'react';
-import { Alert } from 'react-native';
-import CameraKitCameraScreen from 'react-native-camera-kit';
-import { storeVc } from '../utils/storage';
+import React from "react";
+import { View, Text, Pressable } from "react-native";
+import { Link } from "@react-navigation/native";
+import QRCodeScanner from "react-native-qrcode-scanner";
+import { RNCamera } from "react-native-camera";
 
-export default function ScanScreen({ navigation }) {
-  const [scanned, setScanned] = useState(false);
-
-  const onReadCode = async (event) => {
-    if (scanned) return;
-    setScanned(true);
-    try {
-      const vc = JSON.parse(event.nativeEvent.codeStringValue);
-      await storeVc(vc);
-      Alert.alert('Success', 'VC saved to wallet');
-      navigation.navigate('VCs');
-    } catch (e) {
-      Alert.alert('Error', 'Invalid VC QR');
-    }
-  };
+export default function TestCamera() {
 
   return (
-    <CameraKitCameraScreen
-      scanBarcode
-      onReadCode={onReadCode}
-      showFrame
-      laserColor="red"
-      frameColor="white"
-    />
+    <QRCodeScanner
+        onRead={({data}) => alert(data)}
+        
+      />
   );
 }

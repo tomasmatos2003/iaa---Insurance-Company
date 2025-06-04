@@ -1,0 +1,64 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://www.w3.org/2018/credentials/examples/v1",
+    "https://w3id.org/security/suites/ed25519-2020/v1"
+  ],
+  "id": "urn:uuid:4f2c8d7e-9b12-4a34-8c56-abcdef987654",
+  "type": ["VerifiableCredential", "DrivingLicenseCredential"],
+  "issuer": {
+    "type": ["Profile"],
+    "id": "did:example:government-portugal",
+    "name": "Instituto da Mobilidade e dos Transportes (IMT)"
+  },
+  "issuanceDate": "",
+  "expirationDate": "",
+  "credentialSubject": {
+    "id": "did:example:person:abcdef1234567890",
+
+    "photo": "https://example.org/photos/joaosilva.jpg",
+    "familyName": "Silva",
+    "givenName": "João",
+    "birthDate": "1990-05-15",
+    "birthPlace": "Aveiro, Portugal",
+    "nationality": "PRT",
+    "address": {
+      "streetAddress": "Rua das Flores, 123",
+      "postalCode": "3800-000",
+      "city": "Aveiro",
+      "country": "Portugal"
+    },
+
+    "drivingLicense": {
+      "licenseNumber": "AV-12345678",                             
+      "issueDate": "2015-06-01",                                    
+      "expiryDate": "2025-06-01",                                   
+      "issuingAuthority": "IMT – Aveiro",                           
+      "controlNumber": "9876543210",                                
+      "signature": "base64encodedSignatureImage==",
+      "qrCode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA...", 
+
+      "categories": [
+        {
+          "category": "B",
+          "firstIssueDate": "2015-06-01",
+          "validUntil": "2025-06-01",
+          "restrictions": ["01"]                                    
+        },
+        {
+          "category": "A",
+          "firstIssueDate": "2018-06-01",
+          "validUntil": "2028-06-01",
+          "restrictions": []                                         
+        }
+      ]
+    }
+  },
+  "proof": {
+    "type": "Ed25519Signature2020",
+    "created": "2025-06-02T10:00:00Z",
+    "verificationMethod": "did:example:government-portugal#key-1",
+    "proofPurpose": "assertionMethod",
+    "jws": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9..."
+  }
+}

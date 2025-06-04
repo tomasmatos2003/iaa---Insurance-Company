@@ -2,31 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { getStoredVcs } from '../utils/storage';
-import { ec as EC } from 'elliptic'; // ✅ Avoids eddsa issues
-import CryptoJS from 'crypto-js';
-
-const ec = new EC('secp256k1');
-
-// Hash function using crypto-js
-const SHA256 = (data) => CryptoJS.SHA256(data).toString();
-
-// Generate ECC keypair (simulate holder identity)
-const getZkKeyPair = () => ec.genKeyPair();
-
-const generateZkProof = (keyPair, challenge) => {
-  const pubKey = keyPair.getPublic().encode('hex'); // Safe serialized public key
-  const hash = SHA256(challenge);
-  const signature = keyPair.sign(hash);
-
-  return {
-    publicKey: pubKey,
-    challenge,
-    signature: {
-      r: signature.r.toString(16),
-      s: signature.s.toString(16),
-    },
-  };
-};
+import { signPresentation, HOLDER_DID } from '../utils/holder';
 
 export default function VcListScreen() {
   const [vcs, setVcs] = useState([]);
@@ -77,23 +53,24 @@ export default function VcListScreen() {
 
             <Text style={styles.meta}>Valid from {coverage.startDate} to {coverage.endDate}</Text>
 
-            {/* Buttons */}
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.button}
-                onPress={() => {
-                  const keyPair = getZkKeyPair();
-                  const challenge = `zk-challenge-${Date.now()}`;
-                  const zkProof = generateZkProof(keyPair, challenge);
+               onPress={() => {
+                  const challenge = `challenge-${Date.now()}`;
+                  const domain = 'https://example.com/';
+
+                  const presentation = {
+                    '@context': ['https://www.w3.org/2018/credentials/v1'],
+                    type: ['VerifiablePresentation'],
+                    holder: HOLDER_DID,
+                    verifiableCredential: [vc],
+                  };
+
+                  const fullVP = signPresentation(presentation, challenge, domain);
 
                   navigation.navigate('VcQRScreen', {
-                    vcMinimal: {
-                      type: vc.type?.[1],
-                      policyNumber: subject.policyNumber,
-                      coverage: coverage.type,
-                      validUntil: vc.expirationDate,
-                      zkProof,
-                    },
+                    presentationJson: fullVP,
                   });
                 }}
               >

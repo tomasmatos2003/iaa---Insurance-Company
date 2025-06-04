@@ -1,51 +1,39 @@
-{
-  "@context": [
-    "https://www.w3.org/2018/credentials/v1",
-    "https://w3id.org/eidas/v1"
-  ],
-  "id": "did:uuid:5f8a5b27-0c92-4df8-89c6-53a1e5d1b0ab",
-  "type": [
-    "VerifiableCredential",
-    "VehicleInsuranceCredential"
-  ],
-  "issuer": {
-    "id": "did:insurance:seguradoraXYZ",
-    "name": "Seguradora XYZ",
-    "type": ["InsuranceCompany"]
-  },
-  "issuanceDate": "2025-03-26T12:00:00Z",
-  "expirationDate": "2026-03-26T12:00:00Z",
-  "credentialSubject": {
-    "id": "did:vehicle:WVWZZZ1JZ3W386752",
-    "type": "VehicleInsurance",
-    "policyNumber": "ABC-123456789",
-    "holder": {
-      "id": "did:person:123456789",
-      "givenName": "João",
-      "familyName": "Silva",
-      "dateOfBirth": "1990-05-10",
-      "nationality": "PT"
+ {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://www.w3.org/2018/credentials/examples/v1"
+    ],
+    "id": "urn:uuid:1a098e59-baac-4af6-8dff-6d0c6a0978b2",
+    "type": [
+      "VerifiableCredential",
+      "DrivingLicenseCredential"
+    ],
+    "credentialSubject": {
+      "id": "did:card:a",
+      "familyName": "Matos",
+      "givenName": "Tomás",
+      "birthDate": "2025-06-13",
+      "birthPlace": "Averi",
+      "nationality": "TRE",
+      "streetAddress": "20 Rua da Alagoa, Paranhos da Beira",
+      "postalCode": "6270-133",
+      "city": "Seia",
+      "country": "Portugal",
+      "issuingAuthority": "Instituto da Mobilidade e dos Transportes",
+      "categoryCode": "A",
+      "categoryFirstIssueDate": "2025-06-17",
+      "categoryValidUntil": "2025-07-10",
+      "categoryRestrictions": "01, 02"
     },
-    "vehicle": {
-      "make": "Volkswagen",
-      "model": "Golf",
-      "year": "2022",
-      "vin": "did:vin:WVWZZZ1JZ3W386752",
-      "licensePlate": "did:plate:AA-12-BB"
-    },
-    "coverage": {
-      "type": "ThirdPartyLiability",
-      "coverageAmount": "5000000",
-      "startDate": "2025-03-26",
-      "endDate": "2026-03-26"
-    },
-    "issuingAuthority": "Seguradora XYZ"
-  },
-  "proof": {
-    "type": "EcdsaSecp256k1Signature2019",
-    "created": "2025-03-26T12:00:00Z",
-    "proofPurpose": "assertionMethod",
-    "verificationMethod": "did:insurance:seguradoraXYZ#keys-1",
-    "signatureValue": "MEUCIQDh4L4a57aDas671D61Dw"
+    "issuer": "did:key:zXwpV6kY2FqjziZDTbV2anRUMrnKdVNGwPgyYqiLc6N8p16JWStmHEK35yEAn3jvTTYHiw8hzkJxLDKiDApsbRehANyk",
+    "issuanceDate": "2025-06-02T17:52:02.534218Z",
+    "expirationDate": "2026-06-02T17:52:02.534218Z",
+    "proof": {
+      "type": "DataIntegrityProof",
+      "created": "2025-06-02T17:52:02Z",
+      "verificationMethod": "did:key:zXwpV6kY2FqjziZDTbV2anRUMrnKdVNGwPgyYqiLc6N8p16JWStmHEK35yEAn3jvTTYHiw8hzkJxLDKiDApsbRehANyk#did:key:zXwpV6kY2FqjziZDTbV2anRUMrnKdVNGwPgyYqiLc6N8p16JWStmHEK35yEAn3jvTTYHiw8hzkJxLDKiDApsbRehANyk",
+      "cryptosuite": "ecdsa-rdfc-2019",
+      "proofPurpose": "assertionMethod",
+      "proofValue": "MEUCIQD-XkVcP3Ea3HUEqjv7srCPJwBA5PODQoNYes93f8sDfQIgPDIzL9MP-5NhqMhoYVoyDadXkTpKS7GywXhbTOa8M1c"
+    }
   }
-}

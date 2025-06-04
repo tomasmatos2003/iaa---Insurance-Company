@@ -7,13 +7,22 @@ from common.oauth import get_current_user
 from common.jwttoken import create_access_token
 from fastapi import Depends, HTTPException, status
 from models.schemas import User, Login, Token, TokenData, Pre_InsuranceData    
-from datetime import datetime
+from datetime import datetime, timedelta
+from fastapi.encoders import jsonable_encoder
 import requests
 import qrcode
 import io
 import base64
 from fastapi.responses import JSONResponse
 import json
+from uuid import uuid4
+import random
+from typing import List, Optional
+
+import base58
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes
+from cryptography.exceptions import InvalidSignature
 
 app = FastAPI()
 
@@ -53,50 +62,193 @@ def login(request:OAuth2PasswordRequestForm = Depends()):
     access_token = create_access_token(data={"sub": user["username"]})
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.get("/get_my_insurance", response_model=Optional[dict])
+def get_user_insurance_credentials(current_user: TokenData = Depends(get_current_user)):
+    try:
+        user_did = f"did:subject:{current_user.username}"
+        # Find last inserted insurance credential for this user (descending by _id)
+        last_credential = db["insurance_credentials"].find_one(
+            {"credentialSubject.id": user_did},
+            sort=[("_id", -1)]
+        )
 
+        if not last_credential:
+            return None  # No insurance credential found
+
+        # Convert ObjectId to string
+        last_credential["_id"] = str(last_credential["_id"])
+
+        # Generate QR code for the last credential JSON
+        signed_vc_json = json.dumps(last_credential)
+        qr = qrcode.QRCode(version=1, box_size=10, border=4)
+        qr.add_data(signed_vc_json)
+        qr.make(fit=True)
+
+        img = qr.make_image(fill='black', back_color='white')
+        buffered = io.BytesIO()
+        img.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+        qr_code_data_uri = f"data:image/png;base64,{img_str}"
+
+        return {
+            "credential": last_credential,
+            "qr_code": qr_code_data_uri
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+    
+def get_public_key_from_did_key(did_key: str):
+    if not did_key.startswith("did:key:z"):
+        raise ValueError("Unsupported DID key format")
+
+    base58_part = did_key[len("did:key:z"):]
+    decoded = base58.b58decode(base58_part)
+
+    if not decoded.startswith(b'\x12\x00'):
+        raise ValueError("Unsupported or incorrect multicodec prefix for P-256")
+
+    pub_bytes = decoded[2:]  # Remove multicodec prefix
+
+    try:
+        public_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), pub_bytes)
+    except ValueError as e:
+        raise ValueError(f"Failed to load public key: {e}")
+
+    return public_key
+
+def verify_vc_signature(vc):
+    proof = vc.get("proof")
+    if not proof:
+        raise HTTPException(status_code=400, detail="Missing proof in VC")
+
+    issuer = vc.get("issuer")
+    if not issuer:
+        raise HTTPException(status_code=400, detail="Missing issuer in VC")
+
+    vc_to_verify = dict(vc)
+    vc_to_verify.pop("proof")
+
+    data_to_verify = json.dumps(vc_to_verify, separators=(',', ':'), sort_keys=True).encode('utf-8')
+
+    proof_value_b64 = proof.get("proofValue")
+    if not proof_value_b64:
+        raise HTTPException(status_code=400, detail="Missing proofValue in proof")
+
+    padding = '=' * ((4 - len(proof_value_b64) % 4) % 4)
+    try:
+        proof_value_bytes = base64.urlsafe_b64decode(proof_value_b64 + padding)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid base64 in proofValue")
+
+    # Extract public key from DID
+    try:
+        public_key = get_public_key_from_did_key(issuer)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    # Verify signature
+    try:
+        public_key.verify(proof_value_bytes, data_to_verify, ec.ECDSA(hashes.SHA256()))
+        return True
+    except InvalidSignature:
+        raise HTTPException(status_code=400, detail="VC signature is invalid")
 
 @app.post("/insert_data")
 def insert_insurance_data(
     request: Pre_InsuranceData,
     current_user: TokenData = Depends(get_current_user)
 ):
-    dl = request.driving_license_vc.dict()
+    # Since vehicle_vc and driving_license_vc are already dicts, no need to .dict()
+    vehicle_vc = request.vehicle_vc
+    driving_license_vc = request.driving_license_vc
 
-    # Convert both issue_date and expiry_date to ISO strings
-    dl["issue_date"] = datetime.combine(dl["issue_date"], datetime.min.time()).isoformat()
-    dl["expiry_date"] = datetime.combine(dl["expiry_date"], datetime.min.time()).isoformat()
+    # Validate vehicle VC
+    if not verify_vc_signature(vehicle_vc):
+        raise HTTPException(status_code=400, detail="Invalid vehicle VC signature")
 
-    insurance_data = {
-        "user": current_user.username,
-        "driving_license": dl,
-        "vehicle": request.vehicle_vc.dict()
+    # Validate driving license VC
+    if not verify_vc_signature(driving_license_vc):
+        raise HTTPException(status_code=400, detail="Invalid driving license VC signature")
+
+    # Random insurance info generation
+    policy_number = f"POL{random.randint(1000000000, 9999999999)}"
+    insured_value = f"{random.randint(5000, 50000)} EUR"
+    coverage_options = ["Liability", "Collision", "Theft", "Fire", "Glass", "NaturalDisaster"]
+    coverage = random.sample(coverage_options, k=random.randint(2, 4))
+    valid_from_date = datetime.utcnow().date()
+    valid_until_date = valid_from_date + timedelta(days=365)
+    provider = random.choice(["ABC Insurance Co.", "SafeDrive Ltd.", "AutoShield Inc."])
+    insured_person_name = driving_license_vc["credentialSubject"]["givenName"] + " " + driving_license_vc["credentialSubject"]["familyName"]
+
+    insurance_info = {
+        "policyNumber": policy_number,
+        "insuredValue": insured_value,
+        "coverage": coverage,
+        "validFrom": str(valid_from_date),
+        "validUntil": str(valid_until_date),
+        "provider": provider,
+        "insuredPersonName": insured_person_name
     }
-    # Call external signing API
+
+    # Build credential subject
+    credential_subject = {
+        "id": f"did:subject:{current_user.username}",
+        "insurancePolicy": {
+            "policyNumber": insurance_info["policyNumber"],
+            "insuredValue": insurance_info["insuredValue"],
+            "coverage": insurance_info["coverage"],
+            "validFrom": insurance_info["validFrom"],
+            "validUntil": insurance_info["validUntil"],
+            "provider": insurance_info["provider"],
+            "insuredPerson": {
+                "name": insurance_info["insuredPersonName"],
+                "licenseReference": driving_license_vc["id"]
+            },
+            "insuredVehicle": {
+                "plateNumber": vehicle_vc["credentialSubject"]["vehicle"]["plateNumber"],
+                "vin": vehicle_vc["credentialSubject"]["vehicle"]["vin"],
+                "vehicleReference": vehicle_vc["id"]
+            }
+        }
+    }
+
+    vc_id = f"urn:uuid:{uuid4()}"
+    vc_data = {
+        "@context": [
+            "https://www.w3.org/2018/credentials/v1",
+            "https://www.w3.org/2018/credentials/examples/v1"
+        ],
+        "id": vc_id,
+        "type": ["VerifiableCredential", "InsuranceCredential"],
+        "credentialSubject": credential_subject
+    }
+
+    data_to_sign = {
+        "user": current_user.username,
+        "credential": vc_data
+    }
+
     try:
         signing_response = requests.post(
-            "http://127.0.0.1:8001/sign-json",
-            json={"data": insurance_data},
+            "http://127.0.0.1:8001/issue_vc",
+            json=data_to_sign,
             timeout=5
         )
         signing_response.raise_for_status()
-        signature = signing_response.json().get("signature")
+        signed_vc = signing_response.json()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Signing service error: {str(e)}")
 
-    insurance_entry = insurance_data.copy()
-    insurance_entry["signature"] = signature
-
-    # Convert date strings back to datetime for MongoDB if needed
-    insurance_entry["driving_license"]["issue_date"] = datetime.fromisoformat(insurance_entry["driving_license"]["issue_date"])
-    insurance_entry["driving_license"]["expiry_date"] = datetime.fromisoformat(insurance_entry["driving_license"]["expiry_date"])
-
-    db["insurance_applications"].insert_one(insurance_entry)
+    result = db["insurance_credentials"].insert_one(signed_vc)
+    signed_vc["_id"] = str(result.inserted_id)
 
     return {
-        "message": "Insurance application submitted successfully.",
+        "message": "Insurance Verifiable Credential issued successfully.",
         "submitted_by": current_user.username,
-        "signature": signature
+        "vc": signed_vc
     }
+
 
 @app.get("/generate_qrcode")
 def generate_qrcode(current_user: TokenData = Depends(get_current_user)):
