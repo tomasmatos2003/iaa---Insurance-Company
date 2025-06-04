@@ -2,11 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { getStoredVcs } from '../utils/storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signPresentation, HOLDER_DID } from '../utils/holder';
 
 export default function VcListScreen() {
   const [vcs, setVcs] = useState([]);
   const navigation = useNavigation();
+
+const getStoredVcs = async () => {
+  const allKeys = await AsyncStorage.getAllKeys();
+  const vcKeys = allKeys.filter(key => key.startsWith('vc_'));
+  const vcItems = await AsyncStorage.multiGet(vcKeys);
+
+  return vcItems.map(([_, value]) => JSON.parse(value));
+};
 
   useEffect(() => {
     const fetchVcs = async () => {
@@ -16,95 +25,103 @@ export default function VcListScreen() {
     fetchVcs();
   }, []);
 
+const deleteAllVcs = async () => {
+  await AsyncStorage.clear();
+  setVcs([]);
+};
+
+  const deleteVc = async (indexToDelete) => {
+    const keys = await AsyncStorage.getAllKeys();
+    const vcKeys = keys.filter((k) => k.startsWith('vc_'));
+
+    const keyToDelete = vcKeys[indexToDelete];
+    if (keyToDelete) {
+      await AsyncStorage.removeItem(keyToDelete);
+      const updatedVcs = vcs.filter((_, i) => i !== indexToDelete);
+      setVcs(updatedVcs);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Stored Verifiable Credentials</Text>
 
       {vcs.map((vc, index) => {
         const subject = vc.credentialSubject || {};
-        const holder = subject.holder || {};
-        const vehicle = subject.vehicle || {};
-        const coverage = subject.coverage || {};
-        const issuer = vc.issuer?.name || 'Unknown Issuer';
+        const owner = subject.owner || {};
+        const engine = subject.engine || {};
+        const vehicleCategory = subject.vehicleCategory || {};
 
         return (
           <View key={index} style={styles.card}>
-            <Text style={styles.cardTitle}>{vc.type?.[1] || 'Credential'}</Text>
-            <Text style={styles.label}>Issuer:</Text>
-            <Text style={styles.value}>{issuer}</Text>
+  <Text style={styles.cardTitle}>{vc.type?.[1] || 'Credential'}</Text>
 
-            <Text style={styles.label}>Holder:</Text>
-            <Text style={styles.value}>
-              {holder.givenName} {holder.familyName}
-            </Text>
+  <View style={styles.buttonContainer}>
+    <TouchableOpacity
+      style={styles.button}
+      onPress={() => {
+        const challenge = `challenge-${Date.now()}`;
+        const domain = 'https://example.com/';
+        const presentation = {
+          '@context': ['https://www.w3.org/2018/credentials/v1'],
+          type: ['VerifiablePresentation'],
+          holder: HOLDER_DID,
+          verifiableCredential: [vc],
+        };
+        const fullVP = signPresentation(presentation, challenge, domain);
+        navigation.navigate('VcQRScreen', {
+          presentationJson: fullVP,
+        });
+      }}
+    >
+      <Text style={styles.buttonText}>View QR</Text>
+    </TouchableOpacity>
 
-            <Text style={styles.label}>Policy #:</Text>
-            <Text style={styles.value}>{subject.policyNumber}</Text>
+    <TouchableOpacity
+      style={[styles.button, { backgroundColor: '#FF3B30' }]}
+      onPress={() => deleteVc(index)}
+    >
+      <Text style={styles.buttonText}>Delete</Text>
+    </TouchableOpacity>
 
-            <Text style={styles.label}>Vehicle:</Text>
-            <Text style={styles.value}>
-              {vehicle.year} {vehicle.make} {vehicle.model}
-            </Text>
+    <TouchableOpacity
+      style={styles.button}
+      onPress={() =>
+        navigation.navigate('VcDetailScreen', {
+          vcMinimal: {
+            '@context': vc['@context'],
+            type: vc.type,
+            issuer: vc.issuer,
+            issuanceDate: vc.issuanceDate,
+            expirationDate: vc.expirationDate,
+            credentialSubject: vc.credentialSubject,
+            proof: vc.proof,
+          },
+        })
+      }
+    >
+      <Text style={styles.buttonText}>Details</Text>
+    </TouchableOpacity>
+  </View>
+</View>
 
-            <Text style={styles.label}>Coverage:</Text>
-            <Text style={styles.value}>
-              {coverage.type} — €{Number(coverage.coverageAmount).toLocaleString()}
-            </Text>
-
-            <Text style={styles.meta}>Valid from {coverage.startDate} to {coverage.endDate}</Text>
-
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.button}
-               onPress={() => {
-                  const challenge = `challenge-${Date.now()}`;
-                  const domain = 'https://example.com/';
-
-                  const presentation = {
-                    '@context': ['https://www.w3.org/2018/credentials/v1'],
-                    type: ['VerifiablePresentation'],
-                    holder: HOLDER_DID,
-                    verifiableCredential: [vc],
-                  };
-
-                  const fullVP = signPresentation(presentation, challenge, domain);
-
-                  navigation.navigate('VcQRScreen', {
-                    presentationJson: fullVP,
-                  });
-                }}
-              >
-                <Text style={styles.buttonText}>View QR</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.button}
-                onPress={() =>
-                  navigation.navigate('VcDetailScreen', {
-                    vcMinimal: {
-                      '@context': vc['@context'],
-                      type: vc.type,
-                      issuer: vc.issuer,
-                      issuanceDate: vc.issuanceDate,
-                      expirationDate: vc.expirationDate,
-                      credentialSubject: vc.credentialSubject,
-                    },
-                  })
-                }
-              >
-                <Text style={styles.buttonText}>Details</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
         );
       })}
     </ScrollView>
   );
 }
 
+
+
 const styles = StyleSheet.create({
   container: { padding: 16, backgroundColor: '#f9f9f9' },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#000',
+  },
   card: {
     backgroundColor: '#fff',
     padding: 16,
@@ -119,12 +136,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#222',
+    color: '#000',
   },
   label: {
     fontWeight: 'bold',
     marginTop: 6,
-    color: '#555',
+    color: '#000',
   },
   value: {
     marginBottom: 4,
@@ -133,7 +150,7 @@ const styles = StyleSheet.create({
   meta: {
     fontStyle: 'italic',
     fontSize: 12,
-    color: '#777',
+    color: '#000',
     marginTop: 10,
   },
   buttonContainer: {

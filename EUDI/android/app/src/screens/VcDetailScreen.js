@@ -16,6 +16,15 @@ export default function VcDetailScreen({ route }) {
 
 const styles = StyleSheet.create({
   container: { padding: 16 },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 12 },
-  json: { fontFamily: 'monospace', fontSize: 14 },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: '#000', // texto preto
+  },
+  json: {
+    fontFamily: 'monospace',
+    fontSize: 14,
+    color: '#000', // texto preto
+  },
 });

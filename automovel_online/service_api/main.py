@@ -89,6 +89,7 @@ def insert_data(
     }
 
     try:
+        print("Sending data to signing service:", data_to_sign)
         signing_response = requests.post(
             "http://127.0.0.1:8002/issue_vc",
             json=data_to_sign,

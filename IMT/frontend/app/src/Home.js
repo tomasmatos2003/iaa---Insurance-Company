@@ -246,8 +246,8 @@ const Home = () => {
       </form>
 
       {response && (
-      <div className="bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-lg border border-red-300 max-w-md mx-auto">
-        <h4 className="text-xl font-semibold mb-4 text-red-700">Response</h4>
+      <div className="bg-white/80 backdrop-blur-md p-8 rounded-xl shadow-lg border border-blue-300 max-w-xl mx-auto">
+        <h4 className="text-xl font-semibold mb-4 text-blue-700">Response</h4>
         {/* <pre className="bg-red-50 border border-red-200 p-4 rounded overflow-auto text-sm text-red-900 whitespace-pre-wrap">
           {JSON.stringify(response, null, 2)}
         </pre> */}
@@ -257,8 +257,8 @@ const Home = () => {
             <img
               src={response.qr_code}
               alt="Verifiable Credential QR Code"
-              className="mx-auto"
-              style={{ maxWidth: '250px' }}
+              className="mx-auto w-96"
+              // or inline style: style={{ maxWidth: '450px' }}
             />
           </div>
         )}

@@ -1,18 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import exampleVc from '../vcs/example.json';
 import { storeVc } from '../utils/storage';
 
 export default function HomeScreen({ navigation }) {
-  const handleUpload = async () => {
-    try {
-      await storeVc(exampleVc);
-      Alert.alert('Success', 'Example VC added to wallet');
-    } catch (err) {
-      console.error(err);
-      Alert.alert('Error', 'Failed to load VC');
-    }
-  };
+
 
   return (
     <View style={styles.container}>
@@ -25,16 +16,26 @@ export default function HomeScreen({ navigation }) {
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Scan')}>
         <Text style={styles.buttonText}>📷 Scan New VC</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleUpload}>
+      {/* <TouchableOpacity style={styles.button} onPress={handleUpload}>
         <Text style={styles.buttonText}>⬆️ Upload Example VC</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 30, justifyContent: 'center' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 40, textAlign: 'center' },
+  container: {
+    flex: 1,
+    padding: 30,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 40,
+    textAlign: 'center',
+    color: '#000', // texto preto
+  },
   button: {
     backgroundColor: '#ccc',
     padding: 15,
@@ -42,5 +43,8 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     alignItems: 'center',
   },
-  buttonText: { fontSize: 16, color: '#000' },
+  buttonText: {
+    fontSize: 16,
+    color: '#000', // já estava correto
+  },
 });

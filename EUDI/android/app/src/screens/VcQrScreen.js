@@ -29,9 +29,9 @@ export default function VcQrScreen({ route }) {
 
 const styles = StyleSheet.create({
   container: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
+  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#000' },
   qrContainer: { backgroundColor: '#fff', padding: 16, borderRadius: 12 },
-  meta: { marginTop: 20, fontStyle: 'italic', fontSize: 13, color: '#777', textAlign: 'center' },
+  meta: { marginTop: 20, fontStyle: 'italic', fontSize: 13, color: '#000', textAlign: 'center' },
   debugBox: {
     marginTop: 30,
     backgroundColor: '#eee',
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   },
   debugText: {
     fontSize: 12,
-    color: '#333',
+    color: '#000',
     marginBottom: 4,
   },
 });

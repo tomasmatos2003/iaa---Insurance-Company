@@ -254,7 +254,7 @@ def insert_insurance_data(
 def generate_qrcode(current_user: TokenData = Depends(get_current_user)):
     try:
         data = {
-            "url": "http://127.0.0.1:8000/send_vc",
+            "url": "http://192.168.1.149:8000/insert_data",
             "requiredVCs": ["vehicle_vc", "driving_license_vc"]
         }
 

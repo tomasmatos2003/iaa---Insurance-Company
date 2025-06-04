@@ -69,6 +69,7 @@ def sign_json_ld(vc_json: dict) -> dict:
 @app.post("/issue_vc")
 async def issue_vc(request: JSONRequest):
     try:
+        print("Received request:", request.dict())
         vc = request.credential
         if "issuer" not in vc:
             vc["issuer"] = did_key or "did:example:123"

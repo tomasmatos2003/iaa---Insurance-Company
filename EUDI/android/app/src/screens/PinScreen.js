@@ -31,12 +31,17 @@ export default function PinScreen({ navigation, route }) {
 
 const styles = StyleSheet.create({
   container: { padding: 20, marginTop: 80 },
-  label: { fontSize: 18, marginBottom: 10 },
+  label: {
+    fontSize: 18,
+    marginBottom: 10,
+    color: '#000', // texto preto
+  },
   input: {
     borderWidth: 1,
     borderColor: '#aaa',
     padding: 10,
     marginBottom: 20,
     borderRadius: 6,
+    color: '#000', // texto digitado em preto
   },
 });
