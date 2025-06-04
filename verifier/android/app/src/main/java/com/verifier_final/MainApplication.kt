@@ -1,4 +1,4 @@
-package com.verifier
+package com.verifier_final
 
 import android.app.Application
 import com.facebook.react.PackageList

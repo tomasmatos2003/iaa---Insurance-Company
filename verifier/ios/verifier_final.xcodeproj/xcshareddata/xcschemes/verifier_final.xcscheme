@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "verifier.app"
-               BlueprintName = "verifier"
-               ReferencedContainer = "container:verifier.xcodeproj">
+               BuildableName = "verifier_final.app"
+               BlueprintName = "verifier_final"
+               ReferencedContainer = "container:verifier_final.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "verifierTests.xctest"
-               BlueprintName = "verifierTests"
-               ReferencedContainer = "container:verifier.xcodeproj">
+               BuildableName = "verifier_finalTests.xctest"
+               BlueprintName = "verifier_finalTests"
+               ReferencedContainer = "container:verifier_final.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "verifier.app"
-            BlueprintName = "verifier"
-            ReferencedContainer = "container:verifier.xcodeproj">
+            BuildableName = "verifier_final.app"
+            BlueprintName = "verifier_final"
+            ReferencedContainer = "container:verifier_final.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "verifier.app"
-            BlueprintName = "verifier"
-            ReferencedContainer = "container:verifier.xcodeproj">
+            BuildableName = "verifier_final.app"
+            BlueprintName = "verifier_final"
+            ReferencedContainer = "container:verifier_final.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -1,0 +1,138 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://www.w3.org/2018/credentials/examples/v1",
+    "https://w3id.org/security/suites/ed25519-2020/v1",
+    "https://w3id.org/vehicle-credentials/v1"
+  ],
+  "id": "urn:uuid:9f8d7c6b-1234-4abc-9def-0123456789ab",
+  "type": ["VerifiableCredential", "VehicleRegistrationCredential"],
+  "issuer": {
+    "type": ["Profile"],
+    "id": "did:example:government-portugal",
+    "name": "República Portuguesa – Instituto da Mobilidade e dos Transportes"
+  },
+  "issuanceDate": "",
+  "expirationDate": "",
+
+  "credentialSubject": {
+
+    "id": "did:example:vehicle:WDB1234561A123456",
+
+    "registrationCertificateNumber": "12345678",                 
+    "certificateIssueDate": "2025-05-10",                         
+    "countryDistinguishingSign": "P",                                
+    "issuingAuthorities": {
+      "ministryOfInterior": "Direção-Geral de Viação",
+      "ministryOfJustice": "Direção-Geral dos Registos e do Notariado"
+    },
+    "documentLogo": "https://example.org/images/dua-logo.png",      
+    "hologramId": "HGM-20250510-XYZ",                              
+
+
+    "plateNumber": "AA-23-BB",                                 
+    "firstRegistrationDate": "2015-04-15",                            
+    "previousPlateNumber": "ZZ-99-YY",                         
+
+    "owner": {
+      "name": "Maria Alexandra Silva",
+      "address": {
+        "streetAddress": "Rua do Comércio, 45",
+        "postalCode": "1000-001",
+        "city": "Lisboa",
+        "country": "Portugal"
+      },
+      "isOwner": true                                               
+    },
+
+    "brand": "Renault",                                          
+    "model": "Clio",                                             
+    "commercialName": "Clio Zen 1.0 TCe 100",                    
+
+    "vin": "WDB1234561A123456",                                   
+
+    "weights": {
+      "grossVehicleWeight": 1500,                                    
+      "nationalGrossVehicleWeight": 1400,                        
+      "grossCombinationWeight": 0                             
+    },
+    "unladenWeight": 1100,                                    
+    "registrationValidity": "Ilimitada",                         
+
+    "registrationDateReferenced": "2025-05-10",                    
+
+    "approvalNumber": "e1*2001/116*1234",                          
+    "nationalApprovalNumber": "PT-RG-2020-0001",                  
+
+    "engine": {
+      "engineDisplacement": 999,                                     
+      "enginePowerKW": 74,                                      
+      "fuelType": "Gasolina",                                        
+      "engineSpeed": 6000                                        
+    },
+
+    "powerToWeightRatio": 0.067,                                     
+
+    "seating": {
+      "seats": 5,                                                    
+      "standingPlaces": 0                                          
+    },
+
+
+    "vehicleCategory": {
+      "uneceCategory": "M1",                                        
+      "nationalCategory": "Ligeiro de Passageiros",              
+      "vehicleType": "Automóvel Ligeiro",                             
+      "transmissionType": "Manual"                                    
+    },
+
+    "dimensions": {
+      "wheelbase": 2635                                 
+    },
+
+    "axleWeights": {
+      "frontAxleMax": 750,                                        
+      "rearAxleMax": 800,                                            
+      "thirdAxleMax": null,
+      "fourthAxleMax": null,
+      "fifthAxleMax": null
+    },
+
+    "towing": {
+      "trailerWithBrake": 1500,                                        
+      "trailerWithoutBrake": 750                                     
+    },
+
+    "color": "Vermelho Metalizado",                                   
+    "noise": {
+      "stationaryNoiseLevel": 72,                                    
+      "noiseEngineSpeed": 3500                                     
+    },
+    "emissions": {
+      "coEmissions": 120,                                       
+      "particulateEmissions": null                                   
+    },
+
+    "tyres": {
+      "frontTyres": "205/55 R16 91V",                            
+      "rearTyres": "205/55 R16 91V"                                  
+    },
+
+    "specialNotes": "Nenhuma observação adicional.",         
+
+
+    "liensOrEncumbrances": {
+      "leasingContract": "Leasing Conta Bancária SA nº 2024-LEX-001",
+      "otherEncumbrances": null
+    },
+
+    "uniqueCode": "UNI-QR-20250510-A1B2C3D4"
+  },
+  "proof": {
+    "type": "Ed25519Signature2020",
+    "created": "2025-05-10T10:15:00Z",
+    "verificationMethod": "did:example:government-portugal#key-1",
+    "proofPurpose": "assertionMethod",
+    "jws": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9...."
+  }
+}

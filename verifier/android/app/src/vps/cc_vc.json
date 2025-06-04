@@ -1,0 +1,62 @@
+{
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://www.w3.org/2018/credentials/examples/v1",
+    "https://w3id.org/security/suites/ed25519-2020/v1"
+  ],
+  "id": "urn:uuid:a63a60be-f4af-491c-87fc-2c8fd3007a58",
+  "type": ["VerifiableCredential", "CitizenCardCredential"],
+  "issuer": {
+    "type": ["Profile"],
+    "id": "did:example:government-portugal",
+    "name": "República Portuguesa – Instituto de Registos e Notariado"
+  },
+  "issuanceDate": "",
+  "expirationDate": "",
+  "credentialSubject": {
+    "id": "did:example:person:1234567890abcdef",
+    
+    "photo": "https://example.org/photos/johndoe.jpg",
+    "familyName": "Doe",
+    "givenName": "John",
+    "sex": "Male",
+    "height": "180 cm",
+    "nationality": "PRT",
+    "birthDate": "1990-04-12",
+    "civilIdentificationNumber": "123456789",
+    "documentNumber": "AA123456",
+    "expiryDate": "2033-05-15",
+    "signature": "base64encodedSignatureImage==",
+    "canCode": "987654",
+    
+
+    "fatherName": "Robert Doe",
+    "motherName": "Jane Doe",
+    
+
+    "taxNumber": "123456789",
+    "socialSecurityNumber": "987654321",
+    "nationalHealthNumber": "1234567",
+    
+
+    "address": {
+      "streetAddress": "Rua de Exemplo, 123",
+      "postalCode": "4000-000",
+      "city": "Porto",
+      "country": "Portugal"
+    },
+    
+
+    "certificates": {
+      "authenticationCert": "base64encodedAuthCert==",
+      "signatureCert": "base64encodedSignCert=="
+    }
+  },
+  "proof": {
+    "type": "Ed25519Signature2020",
+    "created": "2023-05-15T10:31:00Z",
+    "verificationMethod": "did:example:government-portugal#key-1",
+    "proofPurpose": "assertionMethod",
+    "jws": "eyJhbGciOiJFZERTQS..."
+  }
+}
