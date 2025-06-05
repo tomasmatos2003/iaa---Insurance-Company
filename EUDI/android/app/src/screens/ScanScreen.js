@@ -24,5 +24,5 @@ const handleRead = async ({ data }) => {
   }
   };
 
-  return <QRCodeScanner onRead={handleRead} />;
+  return <QRCodeScanner onRead={handleRead} showMarker={true}/>;
 }
