@@ -14,6 +14,8 @@ import {CachedResolver} from '@digitalbazaar/did-io';
 import {DataIntegrityProof} from '@digitalbazaar/data-integrity';
 import {securityLoader} from '@digitalbazaar/security-document-loader';
 import {contexts as diContexts} from '@digitalbazaar/data-integrity-context';
+import * as snarkjs from 'snarkjs';
+import * as circomlibjs from 'circomlibjs';
 
 const app = express();
 app.use(bodyParser.json({limit: '5mb'})); // Allow JSON body up to 5MB
@@ -130,6 +132,67 @@ app.post('/vp', async (req, res) => {
   }
 });
 
+app.post("/zkp", async (req, res) => {
+  const vc = req.body.verifiableCredential;
+  console.log("Received VC for ZKP 1111:", vc.verifiableCredential);
+  const vc1 = vc.verifiableCredential[0];
+  
+  try {
+    let plateString = "123";
+
+    if (vc1.type[1] === "DrivingLicenseCredential") {
+      console.log("Processing Driving License Credential - " , vc1.id);
+      plateString = vc1.id;
+    }
+    else if (vc1.type[1] === "InsuranceCredential") { 
+      console.log("Processing Insurance Credential - " , vc1.credentialSubject.insurancePolicy.policyNumber); 
+      plateString = vc1.credentialSubject.insurancePolicy.policyNumber;
+    }
+    else if (vc1.type[1] === "AutomobileCredential") {
+      console.log("Processing Vehicle Credential - " , vc1.credentialSubject.vehicle.plateNumber);
+      plateString = vc1.credentialSubject.vehicle.plateNumber;
+    }
+
+    console.log("Received VC for ZKP:", JSON.stringify(vc, null, 2));
+
+    // 🔐 Hash com Poseidon
+    const poseidon = await circomlibjs.buildPoseidon();
+    const plateBigInt = BigInt("0x" + Buffer.from(plateString).toString("hex"));
+    const plateHash = poseidon.F.toString(poseidon([plateBigInt]));
+
+    //expirationDate: '2026-06-05T22:04:44.363958Z' to timestamp in integer
+    const expirationDate =vc1.expirationDate
+    const expirationTimestamp = expirationDate ? Math.floor(new Date(expirationDate).getTime() / 1000) : null;
+    const atual_timestamp = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+
+    console.log("Atual_timestamp:", atual_timestamp);
+    console.log("Expiration Timestamp:", expirationTimestamp);
+    // Inputs para o circuito ZKP
+    const input = {
+      timestamp: atual_timestamp || 1719999999,
+      currentTime: expirationTimestamp || 1720000000,
+      plateNumber: plateBigInt.toString()
+    };
+
+    // Geração da prova
+    const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+      input,
+      "vp_js/vp.wasm",
+      "circuit_0000.zkey"
+    );
+
+    console.log("✅ Public signals:", publicSignals);
+
+    res.json({
+      proof,
+      publicSignals,
+      plateHash
+    });
+  } catch (err) {
+    console.error("❌ ZKP error:", err);
+    res.status(500).json({ error: "ZKP generation failed", details: err.message });
+  }
+});
 // Start server
 const PORT = 3035;
 app.listen(PORT, () => {

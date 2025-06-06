@@ -68,7 +68,7 @@ const deleteAllVcs = async () => {
           holder: HOLDER_DID,
           verifiableCredential: [vc],
         };
-        const fullVP = signPresentation(presentation, challenge, domain);
+        const fullVP = signPresentation(vc, challenge, domain);
         navigation.navigate('VcQRScreen', {
           presentationJson: fullVP,
         });

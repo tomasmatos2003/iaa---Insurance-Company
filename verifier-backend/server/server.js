@@ -1,6 +1,5 @@
 import express from 'express';
-import fs from 'fs';
-
+import fs from "fs/promises";
 import * as DidKey from '@digitalbazaar/did-method-key';
 import * as DidWeb from '@digitalbazaar/did-method-web';
 import * as EcdsaMultikey from '@digitalbazaar/ecdsa-multikey';
@@ -10,6 +9,8 @@ import { CachedResolver } from '@digitalbazaar/did-io';
 import { DataIntegrityProof } from '@digitalbazaar/data-integrity';
 import { securityLoader } from '@digitalbazaar/security-document-loader';
 import { contexts as diContexts } from '@digitalbazaar/data-integrity-context';
+import * as snarkjs from 'snarkjs';
+import * as circomlibjs from 'circomlibjs';
 
 const app = express();
 app.use(express.json()); // parse JSON bodies
@@ -138,6 +139,50 @@ app.post('/verify-vp', async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 });
+
+
+app.post('/verify-zkp', async (req, res) => {
+  try {
+    const { publicSignals, proof , plateNumber} = req.body;
+    
+    if (!publicSignals || !proof) {
+      return res.status(400).json({ error: "Missing publicSignals or proof in body" });
+    }
+
+    console.log("📥 Received public signals:", publicSignals)
+    console.log("📥 Received proof:", proof);
+
+    // Carregar a verification key
+    const vKey = JSON.parse(await fs.readFile("verification_key.json", "utf-8"));
+
+    // Verificar a prova
+    const isValid = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+    const poseidon = await circomlibjs.buildPoseidon();
+    const plateBigInt = BigInt("0x" + Buffer.from(plateNumber).toString("hex"));
+    const plateHash = poseidon.F.toString(poseidon([plateBigInt]));
+
+    if (isValid) {
+      console.log("✅ Verification OK");
+      if (publicSignals[1] !== plateHash) {
+        console.warn("⚠️ Plate hash does not match the expected value.");
+        return res.status(400).json({ valid: false, error: "Plate hash mismatch" });
+      }
+      if (publicSignals[0] !== "1") {
+        console.warn("⚠️ Public signal isValid is not true.");
+        return res.status(400).json({ valid: false, error: "Public signal isValid is not true" });
+      } 
+      return res.json({ verified: true, publicSignals });
+    } else {
+      console.log("❌ Invalid proof");
+      return res.status(400).json({ valid: false, error: "Invalid proof" });
+    }
+
+  } catch (err) {
+    console.error("❌ Error verifying ZKP:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 
 const PORT = 3030;
 app.listen(PORT, () => {

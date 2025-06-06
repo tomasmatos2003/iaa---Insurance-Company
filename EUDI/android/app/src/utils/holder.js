@@ -3,7 +3,7 @@ export async function signPresentation(vc) {
   console.log('▶️ Sending VC to sign as a presentation:\n', JSON.stringify(vc, null, 2));
 
   try {
-    const response = await fetch('http://192.168.1.149:3035/vp', {
+    const response = await fetch('http://192.168.1.149:3035/zkp', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
