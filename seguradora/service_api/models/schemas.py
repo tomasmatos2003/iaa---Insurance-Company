@@ -20,5 +20,5 @@ class TokenData(BaseModel):
     username: Optional[str] = None
 
 class Pre_InsuranceData(BaseModel):
-    vehicle_vc: Dict[str, Any]
-    driving_license_vc: Dict[str, Any]
+    AutomobileCredential: Dict[str, Any]
+    DrivingLicenseCredential: Dict[str, Any]

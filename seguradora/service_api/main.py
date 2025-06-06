@@ -65,15 +65,17 @@ def login(request:OAuth2PasswordRequestForm = Depends()):
 @app.get("/get_my_insurance", response_model=Optional[dict])
 def get_user_insurance_credentials(current_user: TokenData = Depends(get_current_user)):
     try:
-        user_did = f"did:subject:{current_user.username}"
-        # Find last inserted insurance credential for this user (descending by _id)
+
+        user_did = f"did:insurance:{current_user.username}"
+    
         last_credential = db["insurance_credentials"].find_one(
             {"credentialSubject.id": user_did},
             sort=[("_id", -1)]
         )
+        print(last_credential)
 
         if not last_credential:
-            return None  # No insurance credential found
+            return None 
 
         # Convert ObjectId to string
         last_credential["_id"] = str(last_credential["_id"])
@@ -117,60 +119,64 @@ def get_public_key_from_did_key(did_key: str):
 
     return public_key
 
+
 def verify_vc_signature(vc):
+
     proof = vc.get("proof")
-    if not proof:
-        raise HTTPException(status_code=400, detail="Missing proof in VC")
-
     issuer = vc.get("issuer")
-    if not issuer:
-        raise HTTPException(status_code=400, detail="Missing issuer in VC")
 
-    vc_to_verify = dict(vc)
-    vc_to_verify.pop("proof")
+    if not proof or not issuer:
+        print("Missing proof or issuer.")
+        return {"error": "Verificação falhou"}, 400
 
-    data_to_verify = json.dumps(vc_to_verify, separators=(',', ':'), sort_keys=True).encode('utf-8')
-
-    proof_value_b64 = proof.get("proofValue")
-    if not proof_value_b64:
-        raise HTTPException(status_code=400, detail="Missing proofValue in proof")
-
-    padding = '=' * ((4 - len(proof_value_b64) % 4) % 4)
     try:
-        proof_value_bytes = base64.urlsafe_b64decode(proof_value_b64 + padding)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid base64 in proofValue")
+        # Prepare canonicalized VC (remove proof and internal fields)
+        vc_to_verify = {k: v for k, v in vc.items() if k != "proof" and not k.startswith("_")}
+        data_to_verify = json.dumps(vc_to_verify, separators=(',', ':'), sort_keys=True).encode("utf-8")
+        # data_to_verify = b"tampered data"
+        # Decode base64 signature
+        proof_value_b64 = proof.get("proofValue")
+        padding = '=' * ((4 - len(proof_value_b64) % 4) % 4)
+        signature = base64.urlsafe_b64decode(proof_value_b64 + padding)
 
-    # Extract public key from DID
-    try:
+        # Load public key from DID
         public_key = get_public_key_from_did_key(issuer)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    # Verify signature
-    try:
-        public_key.verify(proof_value_bytes, data_to_verify, ec.ECDSA(hashes.SHA256()))
+        
+        public_key.verify(signature, data_to_verify, ec.ECDSA(hashes.SHA256()))
         return True
-    except InvalidSignature:
-        raise HTTPException(status_code=400, detail="VC signature is invalid")
 
+    except Exception as e:
+        print("Signature verification failed:", str(e))
+        return {"error": "Verificação falhou"}, 400
+
+    
 @app.post("/insert_data")
 def insert_insurance_data(
-    request: Pre_InsuranceData,
-    current_user: TokenData = Depends(get_current_user)
-):
+    request: Pre_InsuranceData
+):  
     # Since vehicle_vc and driving_license_vc are already dicts, no need to .dict()
-    vehicle_vc = request.vehicle_vc
-    driving_license_vc = request.driving_license_vc
+    vehicle_vc = request.AutomobileCredential
+    driving_license_vc = request.DrivingLicenseCredential
 
-    # Validate vehicle VC
-    if not verify_vc_signature(vehicle_vc):
-        raise HTTPException(status_code=400, detail="Invalid vehicle VC signature")
+    result = verify_vc_signature(vehicle_vc)
+    if result is not True:
+        return JSONResponse(
+            content={
+                "error": "AutomobileCredential verification failed",
+            },
+            status_code=400
+        )
 
-    # Validate driving license VC
+
+    result = verify_vc_signature(driving_license_vc)
     if not verify_vc_signature(driving_license_vc):
-        raise HTTPException(status_code=400, detail="Invalid driving license VC signature")
-
+        return JSONResponse(
+            content={
+                "error": "DrivingLicenseCredential verification failed",
+            },
+            status_code=400
+        )
+    
     # Random insurance info generation
     policy_number = f"POL{random.randint(1000000000, 9999999999)}"
     insured_value = f"{random.randint(5000, 50000)} EUR"
@@ -190,10 +196,11 @@ def insert_insurance_data(
         "provider": provider,
         "insuredPersonName": insured_person_name
     }
+    username = driving_license_vc["credentialSubject"]["id"].split(":")[2]
 
     # Build credential subject
     credential_subject = {
-        "id": f"did:subject:{current_user.username}",
+        "id": "did:insurance:"+ username,
         "insurancePolicy": {
             "policyNumber": insurance_info["policyNumber"],
             "insuredValue": insurance_info["insuredValue"],
@@ -225,7 +232,7 @@ def insert_insurance_data(
     }
 
     data_to_sign = {
-        "user": current_user.username,
+        "user": username,
         "credential": vc_data
     }
 
@@ -242,10 +249,10 @@ def insert_insurance_data(
 
     result = db["insurance_credentials"].insert_one(signed_vc)
     signed_vc["_id"] = str(result.inserted_id)
-
+    print(signed_vc)
     return {
         "message": "Insurance Verifiable Credential issued successfully.",
-        "submitted_by": current_user.username,
+        "submitted_by": username,
         "vc": signed_vc
     }
 
@@ -254,9 +261,10 @@ def insert_insurance_data(
 def generate_qrcode(current_user: TokenData = Depends(get_current_user)):
     try:
         data = {
-            "url": "http://192.168.1.149:8000/insert_data",
-            "requiredVCs": ["vehicle_vc", "driving_license_vc"]
+            "url": "http://192.168.1.105:8000/insert_data",
+            "requiredVCs": ["AutomobileCredential", "DrivingLicenseCredential"]
         }
+
 
         json_str = json.dumps(data)
 

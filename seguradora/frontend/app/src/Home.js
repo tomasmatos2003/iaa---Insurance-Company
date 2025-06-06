@@ -43,6 +43,7 @@ const Home = () => {
     const fetchUserInsurance = async () => {
       try {
         const res = await axios.get("http://127.0.0.1:8000/get_my_insurance", { headers });
+        console.log("User Insurance Data:", res.data); // Debug log to verify structure
         if (res.data) {
           setUserInsurance(res.data.credential);
           setUserInsuranceQrCode(res.data.qr_code);
@@ -93,23 +94,35 @@ const Home = () => {
         )}
       </div>
 
+      {/* Mensagem quando não houver seguro */}
+      {!userInsurance && (
+        <div className="bg-yellow-100 text-yellow-800 p-4 rounded mb-6 border border-yellow-300 text-center">
+          Refresh the page after success in EUDI wallet
+        </div>
+      )}
+
+      {/* Mostra o seguro quando existir */}
       {userInsurance && (
         <div className="bg-white/80 backdrop-blur-md p-6 rounded-xl shadow-lg border border-[#d7ccc8]">
           <h3 className="text-xl font-semibold mb-6 text-[#5d4037]">Your Latest Insurance Credential</h3>
 
-          <img
-            src={userInsuranceQrCode}
-            alt="Latest Insurance VC QR Code"
-            className="mx-auto mb-6"
-            style={{ maxWidth: "300px" }}
-          />
+          {userInsuranceQrCode ? (
+            <img
+              src={userInsuranceQrCode}
+              alt="Latest Insurance VC QR Code"
+              className="mx-auto mb-6"
+              style={{ maxWidth: "400px", width: "100%", height: "auto" }}
+            />
+          ) : (
+            <p className="mb-6 text-center text-[#a1887f]">No QR code available</p>
+          )}
 
-          <p><strong>Policy Number:</strong> {userInsurance.credentialSubject.insurancePolicy.policyNumber}</p>
-          <p><strong>Insured Value:</strong> {userInsurance.credentialSubject.insurancePolicy.insuredValue}</p>
-          <p><strong>Coverage:</strong> {userInsurance.credentialSubject.insurancePolicy.coverage.join(", ")}</p>
-          <p><strong>Valid From:</strong> {userInsurance.credentialSubject.insurancePolicy.validFrom}</p>
-          <p><strong>Valid Until:</strong> {userInsurance.credentialSubject.insurancePolicy.validUntil}</p>
-          <p><strong>Provider:</strong> {userInsurance.credentialSubject.insurancePolicy.provider}</p>
+          <p><strong>Policy Number:</strong> {userInsurance?.credentialSubject?.insurancePolicy?.policyNumber ?? 'N/A'}</p>
+          <p><strong>Insured Value:</strong> {userInsurance?.credentialSubject?.insurancePolicy?.insuredValue ?? 'N/A'}</p>
+          <p><strong>Coverage:</strong> {(userInsurance?.credentialSubject?.insurancePolicy?.coverage ?? []).join(", ")}</p>
+          <p><strong>Valid From:</strong> {userInsurance?.credentialSubject?.insurancePolicy?.validFrom ?? 'N/A'}</p>
+          <p><strong>Valid Until:</strong> {userInsurance?.credentialSubject?.insurancePolicy?.validUntil ?? 'N/A'}</p>
+          <p><strong>Provider:</strong> {userInsurance?.credentialSubject?.insurancePolicy?.provider ?? 'N/A'}</p>
         </div>
       )}
     </div>
