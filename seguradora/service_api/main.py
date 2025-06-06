@@ -208,8 +208,10 @@ def insert_insurance_data(
             "validFrom": insurance_info["validFrom"],
             "validUntil": insurance_info["validUntil"],
             "provider": insurance_info["provider"],
-            "insuredPerson": {
-                "name": insurance_info["insuredPersonName"],
+            "insuredDrivingLicense": {
+                "givenName": driving_license_vc["givenName"],
+                "familyName": driving_license_vc["familyName"],
+                "categoryCode": driving_license_vc["categoryCode"],
                 "licenseReference": driving_license_vc["id"]
             },
             "insuredVehicle": {
