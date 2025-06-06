@@ -209,10 +209,10 @@ def insert_insurance_data(
             "validUntil": insurance_info["validUntil"],
             "provider": insurance_info["provider"],
             "insuredDrivingLicense": {
-                "givenName": driving_license_vc["givenName"],
-                "familyName": driving_license_vc["familyName"],
-                "categoryCode": driving_license_vc["categoryCode"],
-                "licenseReference": driving_license_vc["id"]
+                "givenName": driving_license_vc["credentialSubject"]["givenName"],
+                "familyName": driving_license_vc["credentialSubject"]["familyName"],
+                "categoryCode": driving_license_vc["credentialSubject"]["categoryCode"],
+                "licenseReference": driving_license_vc["credentialSubject"]["id"]
             },
             "insuredVehicle": {
                 "plateNumber": vehicle_vc["credentialSubject"]["vehicle"]["plateNumber"],
