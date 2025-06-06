@@ -57,7 +57,6 @@ def insert_data(
     request: DLWrapper,
     current_user: TokenData = Depends(get_current_user)
 ):  
-    # Convert driving_license to dict and ensure it's serializable
     dl_dict = request.driving_license.dict()
     dl_dict_serializable = jsonable_encoder(dl_dict)
 
@@ -100,20 +99,16 @@ def insert_data(
 
     result = db["driving_licenses"].insert_one(signed_vc)
 
-    # Convert ObjectId to string before JSON serialization
     signed_vc["_id"] = str(result.inserted_id)
 
-    # Now serialize to JSON
     signed_vc_json = json.dumps(signed_vc)
 
-    # Generate QR code from the signed VC JSON
     qr = qrcode.QRCode(version=1, box_size=10, border=4)
     qr.add_data(signed_vc_json)
     qr.make(fit=True)
 
     img = qr.make_image(fill='black', back_color='white')
 
-    # Convert PIL image to base64 string
     buffered = io.BytesIO()
     img.save(buffered, format="PNG")
     img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')

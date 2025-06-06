@@ -67,7 +67,6 @@ def get_user_insurance_credentials(current_user: TokenData = Depends(get_current
     try:
 
         user_did = f"did:insurance:{current_user.username}"
-    
         last_credential = db["insurance_credentials"].find_one(
             {"credentialSubject.id": user_did},
             sort=[("_id", -1)]
@@ -77,10 +76,7 @@ def get_user_insurance_credentials(current_user: TokenData = Depends(get_current
         if not last_credential:
             return None 
 
-        # Convert ObjectId to string
         last_credential["_id"] = str(last_credential["_id"])
-
-        # Generate QR code for the last credential JSON
         signed_vc_json = json.dumps(last_credential)
         qr = qrcode.QRCode(version=1, box_size=10, border=4)
         qr.add_data(signed_vc_json)
@@ -130,16 +126,12 @@ def verify_vc_signature(vc):
         return {"error": "Verificação falhou"}, 400
 
     try:
-        # Prepare canonicalized VC (remove proof and internal fields)
         vc_to_verify = {k: v for k, v in vc.items() if k != "proof" and not k.startswith("_")}
         data_to_verify = json.dumps(vc_to_verify, separators=(',', ':'), sort_keys=True).encode("utf-8")
-        # data_to_verify = b"tampered data"
-        # Decode base64 signature
+
         proof_value_b64 = proof.get("proofValue")
         padding = '=' * ((4 - len(proof_value_b64) % 4) % 4)
         signature = base64.urlsafe_b64decode(proof_value_b64 + padding)
-
-        # Load public key from DID
         public_key = get_public_key_from_did_key(issuer)
         
         public_key.verify(signature, data_to_verify, ec.ECDSA(hashes.SHA256()))
@@ -154,12 +146,11 @@ def verify_vc_signature(vc):
 def insert_insurance_data(
     request: Pre_InsuranceData
 ):  
-    # Since vehicle_vc and driving_license_vc are already dicts, no need to .dict()
     vehicle_vc = request.AutomobileCredential
     driving_license_vc = request.DrivingLicenseCredential
 
     result = verify_vc_signature(vehicle_vc)
-    if result is not True:
+    if not result:
         return JSONResponse(
             content={
                 "error": "AutomobileCredential verification failed",
@@ -169,7 +160,7 @@ def insert_insurance_data(
 
 
     result = verify_vc_signature(driving_license_vc)
-    if not verify_vc_signature(driving_license_vc):
+    if not result:
         return JSONResponse(
             content={
                 "error": "DrivingLicenseCredential verification failed",
@@ -177,7 +168,6 @@ def insert_insurance_data(
             status_code=400
         )
     
-    # Random insurance info generation
     policy_number = f"POL{random.randint(1000000000, 9999999999)}"
     insured_value = f"{random.randint(5000, 50000)} EUR"
     coverage_options = ["Liability", "Collision", "Theft", "Fire", "Glass", "NaturalDisaster"]
@@ -198,7 +188,6 @@ def insert_insurance_data(
     }
     username = driving_license_vc["credentialSubject"]["id"].split(":")[2]
 
-    # Build credential subject
     credential_subject = {
         "id": "did:insurance:"+ username,
         "insurancePolicy": {
@@ -267,20 +256,15 @@ def generate_qrcode(current_user: TokenData = Depends(get_current_user)):
             "requiredVCs": ["AutomobileCredential", "DrivingLicenseCredential"]
         }
 
-
         json_str = json.dumps(data)
 
         qr = qrcode.QRCode(version=1, box_size=10, border=4)
         qr.add_data(json_str)
         qr.make(fit=True)
-
         img = qr.make_image(fill_color="black", back_color="white")
-
         buf = io.BytesIO()
         img.save(buf, format="PNG")
         buf.seek(0)
-
-        # Encode image as base64
         img_base64 = base64.b64encode(buf.read()).decode("utf-8")
         data_uri = f"data:image/png;base64,{img_base64}"
 

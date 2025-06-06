@@ -13,14 +13,12 @@ PUBLIC_KEY_FILE = os.path.join(KEYS_DIR, "public_key.pem")
 
 
 def get_did_key_from_pubkey(public_key) -> str:
-    """
-    Derives a did:key DID from a P-256 public key.
-    """
+
     pub_bytes = public_key.public_bytes(
         encoding=serialization.Encoding.X962,
         format=serialization.PublicFormat.UncompressedPoint
     )
-    multicodec_prefix = b'\x12\x00'  # P-256 multicodec prefix
+    multicodec_prefix = b'\x12\x00'  
 
     prefixed_key = multicodec_prefix + pub_bytes
     mb_key = 'z' + base58.b58encode(prefixed_key).decode('utf-8')
@@ -29,31 +27,25 @@ def get_did_key_from_pubkey(public_key) -> str:
 
 
 def generate_and_store_keys(passphrase: bytes):
-    # Create keys directory if not exists
     os.makedirs(KEYS_DIR, exist_ok=True)
 
-    # Generate EC P-256 key
     private_key = ec.generate_private_key(ec.SECP256R1(), default_backend())
 
-    # Serialize and encrypt private key PEM with passphrase
     encrypted_private_key = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.BestAvailableEncryption(passphrase)
     )
 
-    # Serialize public key PEM (no encryption)
     public_key = private_key.public_key()
     public_pem = public_key.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
 
-    # Write private key PEM encrypted
     with open(PRIVATE_KEY_FILE, "wb") as f:
         f.write(encrypted_private_key)
 
-    # Write public key PEM
     with open(PUBLIC_KEY_FILE, "wb") as f:
         f.write(public_pem)
 
@@ -71,7 +63,6 @@ def load_private_key(passphrase: bytes):
     return private_key
 
 def update_env_with_did(did: str, env_path=".env"):
-    # Read existing .env lines if file exists
     lines = []
     if os.path.exists(env_path):
         with open(env_path, "r") as f:
@@ -86,7 +77,6 @@ def update_env_with_did(did: str, env_path=".env"):
             else:
                 f.write(line)
         if not key_exists:
-            # Append if not found
             f.write(f"DID_KEY={did}\n")
 
 
@@ -105,14 +95,12 @@ def main():
     else:
         print("Keys not found, generating new key pair...")
         generate_and_store_keys(passphrase_bytes)
-        private_key = load_private_key(passphrase_bytes)  # load after generation
+        private_key = load_private_key(passphrase_bytes)  
 
-    # Derive DID from public key
     public_key = private_key.public_key()
     did_key = get_did_key_from_pubkey(public_key)
     print(f"Derived DID: {did_key}")
 
-    # Update .env with DID_KEY
     update_env_with_did(did_key)
     print("DID_KEY updated in .env file.")
 

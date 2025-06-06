@@ -19,7 +19,7 @@ PRIVATE_KEY_FILE = os.path.join(KEYS_DIR, "private_key.pem")
 
 class JSONRequest(BaseModel):
     user: str
-    credential: Any  # The VC payload
+    credential: Any 
 
 def load_private_key():
     passphrase = os.getenv("PASSPHRASE")
@@ -36,21 +36,18 @@ def load_private_key():
     return private_key
 
 
-did_key = os.getenv("DID_KEY")  # e.g. did:key:z.... loaded from env
+did_key = os.getenv("DID_KEY") 
 
 def sign_json_ld(vc_json: dict) -> dict:
     private_key = load_private_key()
     
-    # Deterministic JSON serialization
     json_bytes = json.dumps(vc_json, sort_keys=True, separators=(',', ':')).encode('utf-8')
 
-    # Sign using ECDSA with SHA256
     signature = private_key.sign(
         json_bytes,
         ec.ECDSA(hashes.SHA256())
     )
 
-    # Encode signature in multibase/base58 or base64url (for demo, base64url)
     proof_value = base64.urlsafe_b64encode(signature).decode('utf-8').rstrip("=")
 
     proof = {
