@@ -74,7 +74,7 @@ const deleteAllVcs = async () => {
         });
       }}
     >
-      <Text style={styles.buttonText}>View QR</Text>
+      <Text style={styles.buttonText}>Show VP</Text>
     </TouchableOpacity>
 
     <TouchableOpacity

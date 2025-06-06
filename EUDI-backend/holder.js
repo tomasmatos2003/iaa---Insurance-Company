@@ -69,7 +69,8 @@ app.post('/vp', async (req, res) => {
 
     // Generate key pair for holder
     const vpEcdsaKeyPair = await EcdsaMultikey.generate({curve: 'P-384'});
-    fs.writeFileSync('vpEcdsaKeyPair.json', JSON.stringify(await vpEcdsaKeyPair.export({publicKey: true})));
+    const exportedKey = await vpEcdsaKeyPair.export({publicKey: true});
+    fs.writeFileSync('vpEcdsaKeyPair.json', JSON.stringify(exportedKey, null, 2));
 
 
     const {
@@ -116,7 +117,13 @@ app.post('/vp', async (req, res) => {
 
     console.log("Generated VP:", JSON.stringify(vp, null, 2));
 
-    return res.json(vp);
+    // Respond with VP and public key JSON
+
+    console.log("Exported public key:", JSON.stringify(exportedKey, null, 2));
+    return res.json({
+      vp,
+      publicKey: exportedKey
+    });
   } catch (err) {
     console.error("Error generating VP:", err);
     return res.status(500).json({error: err.message || 'Internal Server Error'});

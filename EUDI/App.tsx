@@ -12,6 +12,7 @@ import VcListScreen from './android/app/src/screens/VcListScreen';
 import ScanScreen from './android/app/src/screens/ScanScreen';
 import VcDetailScreen from './android/app/src/screens/VcDetailScreen';
 import VcQrScreen from './android/app/src/screens/VcQrScreen';
+import RequestsScreen from './android/app/src/screens/RequestsScreen';
 
 const Stack = createStackNavigator();
 
@@ -26,6 +27,7 @@ export default function App() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="VCs" component={VcListScreen} />
         <Stack.Screen name="Scan" component={ScanScreen} />
+        <Stack.Screen name='Requests' component={RequestsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

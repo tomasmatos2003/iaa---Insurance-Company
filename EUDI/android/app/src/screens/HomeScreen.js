@@ -16,6 +16,9 @@ export default function HomeScreen({ navigation }) {
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Scan')}>
         <Text style={styles.buttonText}>📷 Scan New VC</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Requests')}>
+        <Text style={styles.buttonText}>📝 Scan Request VCs</Text>
+      </TouchableOpacity>
       {/* <TouchableOpacity style={styles.button} onPress={handleUpload}>
         <Text style={styles.buttonText}>⬆️ Upload Example VC</Text>
       </TouchableOpacity> */}

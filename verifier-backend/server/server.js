@@ -53,11 +53,17 @@ async function main({ verifiablePresentation, documentLoader, challenge }) {
   const VP_DID = 'did:web:example.org:issuer:123';
   const VP_DID_URL = 'https://example.org/issuer/123';
 
+  console.log('VPPPPP: ', verifiablePresentation);
+  const { vp, publicKey } = verifiablePresentation;
+
+  verifiablePresentation = vp;
+
   console.log('🔑 Loading ECDSA KeyPair from file...');
-  const vpEcdsaKeyPairData = fs.readFileSync('vpEcdsaKeyPair.json', 'utf8');
+  const vpEcdsaKeyPairData = publicKey
   console.log('🔑 Raw KeyPair Data:', vpEcdsaKeyPairData);
 
-  const vpEcdsaKeyPair = await EcdsaMultikey.from(JSON.parse(vpEcdsaKeyPairData));
+
+  const vpEcdsaKeyPair = await EcdsaMultikey.from(vpEcdsaKeyPairData);
   console.log('🔑 Parsed ECDSA KeyPair:', vpEcdsaKeyPair);
 
   const { didDocument: vpDidDocument, methodFor: vpMethodFor } = await didWebDriver.fromKeyPair({

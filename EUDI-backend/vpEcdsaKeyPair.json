@@ -1,1 +1,5 @@
-{"@context":"https://w3id.org/security/multikey/v1","type":"Multikey","publicKeyMultibase":"z82LkmMGocYSDaUVjCDcj2Ho3Kw8UDNWZ9Mpc17XoVht3qe6UVXRQUE2JcWfp4DVdWmXyXg"}
+{
+  "@context": "https://w3id.org/security/multikey/v1",
+  "type": "Multikey",
+  "publicKeyMultibase": "z82LksGwS1Ucy9h9m3Sp367LUTTsTVTaxotwgRZ54mgsJRULYgTKQjFH913MA4fj8vsuwHc"
+}
