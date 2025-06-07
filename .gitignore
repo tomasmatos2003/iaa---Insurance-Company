@@ -15,6 +15,10 @@ governo/keys
 IMT/service_api/venv
 IMT/service_api/__pycache__
 
+#tudo dentro da pasta verifier
+verifier/*
+verifier/
+
 # Ambiente virtual
 venv/
 .env

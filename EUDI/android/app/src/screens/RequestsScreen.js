@@ -73,32 +73,6 @@ export default function TestCamera({ navigation }) {
                   );
                   return;
                 }
-                const payload1 = {
-                    AutomobileCredential: {
-                      "@context": ["https://www.w3.org/2018/credentials/v1"],
-                      id: "urn:uuid:test-auto",
-                      type: ["VerifiableCredential", "AutomobileCredential"],
-                      credentialSubject: {
-                        vehicle: {
-                          plateNumber: "AA-11-11",
-                          vin: "VIN123456789",
-                        },
-                        id: "did:key:test123",
-                      },
-                    },
-                    DrivingLicenseCredential: {
-                      "@context": ["https://www.w3.org/2018/credentials/v1"],
-                      id: "urn:uuid:test-license",
-                      type: ["VerifiableCredential", "DrivingLicenseCredential"],
-                      credentialSubject: {
-                        givenName: "Jane",
-                        familyName: "Doe",
-                        id: "did:key:jane_doe",
-                      },
-                    },
-                  };
-                console.log("payload", payload1);
-                const jsonPayload = JSON.stringify(payload1);
                 console.log("JSON payload:", jsonPayload);
                 const response = await fetch(url, {
                   method: "POST",

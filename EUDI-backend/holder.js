@@ -134,23 +134,23 @@ app.post('/vp', async (req, res) => {
 
 app.post("/zkp", async (req, res) => {
   const vc = req.body.verifiableCredential;
-  console.log("Received VC for ZKP 1111:", vc.verifiableCredential);
-  const vc1 = vc.verifiableCredential[0];
+  console.log("Received ZKP request with VC:", JSON.stringify(vc, null, 2));
+  console.log("Received VC for ZKP 1111:", vc.credentialSubject);
   
   try {
     let plateString = "123";
 
-    if (vc1.type[1] === "DrivingLicenseCredential") {
-      console.log("Processing Driving License Credential - " , vc1.id);
-      plateString = vc1.id;
+    if (vc.type[1] === "DrivingLicenseCredential") {
+      console.log("Processing Driving License Credential - " , vc.id);
+      plateString = vc.id;
     }
-    else if (vc1.type[1] === "InsuranceCredential") { 
-      console.log("Processing Insurance Credential - " , vc1.credentialSubject.insurancePolicy.policyNumber); 
-      plateString = vc1.credentialSubject.insurancePolicy.policyNumber;
+    else if (vc.type[1] === "InsuranceCredential") { 
+      console.log("Processing Insurance Credential - " , vc.credentialSubject.insurancePolicy.policyNumber); 
+      plateString = vc.credentialSubject.insurancePolicy.policyNumber;
     }
-    else if (vc1.type[1] === "AutomobileCredential") {
-      console.log("Processing Vehicle Credential - " , vc1.credentialSubject.vehicle.plateNumber);
-      plateString = vc1.credentialSubject.vehicle.plateNumber;
+    else if (vc.type[1] === "AutomobileCredential") {
+      console.log("Processing Vehicle Credential - " , vc.credentialSubject.vehicle.plateNumber);
+      plateString = vc.credentialSubject.vehicle.plateNumber;
     }
 
     console.log("Received VC for ZKP:", JSON.stringify(vc, null, 2));
@@ -161,7 +161,7 @@ app.post("/zkp", async (req, res) => {
     const plateHash = poseidon.F.toString(poseidon([plateBigInt]));
 
     //expirationDate: '2026-06-05T22:04:44.363958Z' to timestamp in integer
-    const expirationDate =vc1.expirationDate
+    const expirationDate =vc.expirationDate
     const expirationTimestamp = expirationDate ? Math.floor(new Date(expirationDate).getTime() / 1000) : null;
     const atual_timestamp = Math.floor(Date.now() / 1000); // Current timestamp in seconds
 
